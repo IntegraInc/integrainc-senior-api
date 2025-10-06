@@ -21,6 +21,9 @@ export class AuthController {
     password,
     encryption || 0
    );
+   if (!result.success) {
+    return res.status(404).json(result);
+   }
    return res.json(result);
   } catch (error: any) {
    console.error("Login error:", error.message);

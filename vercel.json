@@ -1,0 +1,10 @@
+{
+ "version": 2,
+ "builds": [
+  {
+   "src": "dist/shared/http/server.js",
+   "use": "@vercel/node"
+  }
+ ],
+ "routes": [{ "src": "/(.*)", "dest": "dist/shared/http/server.js" }]
+}

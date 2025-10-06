@@ -1,14 +1,20 @@
-/**
- * Extract specific fields from a parsed SOAP XML response.
- * @param parsedResponse The parsed XML object (from xml2js)
- * @param fields An array of field names to extract (nested fields supported)
- * @returns A simplified object containing only the requested fields
- */
-/**
- * Extract specific fields from a parsed SOAP XML response.
- * Detects Senior ERP errors via "erroExecucao" property.
- */
-export function extractSoapFields(parsedResponse: any, fields: string[]) {
+type SoapExtractSuccess<T> = {
+ error: false;
+ data: T;
+};
+
+type SoapExtractError = {
+ error: true;
+ code: string;
+ message: string;
+ details?: any;
+};
+
+// Generic return type – T is the shape of expected fields
+export function extractSoapFields<T = Record<string, any>>(
+ parsedResponse: any,
+ fields: (keyof T | string)[]
+): SoapExtractSuccess<T> | SoapExtractError {
  const result: Record<string, any> = {};
 
  function deepFind(obj: any, key: string): any {
@@ -22,10 +28,8 @@ export function extractSoapFields(parsedResponse: any, fields: string[]) {
   return undefined;
  }
 
- // 🧠 Detect SOAP execution error
  const erroExecucao = deepFind(parsedResponse, "erroExecucao");
 
- // If erroExecucao exists and has no "$", it means Senior returned an actual error
  if (erroExecucao && typeof erroExecucao === "object" && !erroExecucao["$"]) {
   const message =
    typeof erroExecucao === "string"
@@ -34,18 +38,18 @@ export function extractSoapFields(parsedResponse: any, fields: string[]) {
 
   return {
    error: true,
+   code: "SOAP_ERROR",
    message: "Senior ERP returned an execution error.",
    details: message,
   };
  }
 
- // ✅ No error detected → extract requested fields
  for (const field of fields) {
-  result[field] = deepFind(parsedResponse, field);
+  result[field as string] = deepFind(parsedResponse, field as string);
  }
 
  return {
   error: false,
-  data: result,
+  data: result as T,
  };
 }

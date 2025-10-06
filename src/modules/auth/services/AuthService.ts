@@ -15,7 +15,7 @@ export class AuthService {
    encryption
   );
 
-  const parsed = extractSoapFields(response, ["pmLogged", "token"]);
+  const parsed = extractSoapFields(response, ["pmLogged"]);
 
   // 🧠 Case 1: SOAP execution failure
   if (parsed.error) {
@@ -26,14 +26,13 @@ export class AuthService {
    };
   }
 
-  const { pmLogged } = parsed.data?.pmLogged;
-
   // 🧠 Case 2: Invalid credentials (pmLogged = -1)
-  if (pmLogged.toString() == "-1") {
+  if (parsed.data.pmLogged === "-1") {
    return {
     success: false,
-    code: "INVALID_CREDENTIALS",
-    message: "Invalid username or password.",
+    error: {
+     message: "Invalid username or password.",
+    },
    };
   }
 
@@ -41,7 +40,7 @@ export class AuthService {
   return {
    success: true,
    message: "Authenticated successfully.",
-   result: parsed.data,
+   data: "User authenticated",
   };
  }
 }
