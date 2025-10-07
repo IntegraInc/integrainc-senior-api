@@ -37,6 +37,8 @@ export class SeniorClient {
     timeout: soapConfig.timeout,
    });
 
+   console.log(this.url);
+
    const parsed = await parseStringPromise(data, { explicitArray: false });
    return parsed;
   } catch (error: any) {

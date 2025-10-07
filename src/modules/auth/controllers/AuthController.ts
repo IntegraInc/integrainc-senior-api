@@ -27,7 +27,9 @@ export class AuthController {
    return res.json(result);
   } catch (error: any) {
    console.error("Login error:", error.message);
-   return res.status(404).json({ error: "Authentication failed." });
+   return res
+    .status(404)
+    .json({ error: "Authentication failed.", details: error.message });
   }
  }
 }
