@@ -13,11 +13,16 @@ class AuthController {
         }
         try {
             const result = await this.service.authenticate(user, password, encryption || 0);
+            if (!result.success) {
+                return res.status(404).json(result);
+            }
             return res.json(result);
         }
         catch (error) {
             console.error("Login error:", error.message);
-            return res.status(404).json({ error: "Authentication failed." });
+            return res
+                .status(404)
+                .json({ error: "Authentication failed.", details: error.message });
         }
     }
 }

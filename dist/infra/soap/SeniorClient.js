@@ -37,6 +37,7 @@ class SeniorClient {
                 },
                 timeout: soap_config_1.soapConfig.timeout,
             });
+            console.log(this.url);
             const parsed = await (0, xml2js_1.parseStringPromise)(data, { explicitArray: false });
             return parsed;
         }
