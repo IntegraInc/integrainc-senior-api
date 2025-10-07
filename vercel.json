@@ -3,7 +3,10 @@
  "builds": [
   {
    "src": "dist/shared/http/server.js",
-   "use": "@vercel/node"
+   "use": "@vercel/node",
+   "config": {
+    "regions": ["gru1"]
+   }
   }
  ],
  "routes": [{ "src": "/(.*)", "dest": "dist/shared/http/server.js" }]
