@@ -5,7 +5,8 @@
  "scripts": {
   "dev": "nodemon --watch src --exec ts-node src/shared/http/server.ts",
   "build": "tsc",
-  "start": "node dist/shared/http/server.js"
+  "start": "node dist/shared/http/server.js",
+  "deploy": "vercel --prod --regions gru1 --force"
  },
  "keywords": [],
  "author": "",
