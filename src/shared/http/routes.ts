@@ -6,8 +6,8 @@ import productsRoutes from "../../modules/products/routes/products.routes";
 
 const routes = Router();
 
-routes.use("/products", productsRoutes);
-routes.use("/replenishment", replenishmentRoutes);
-routes.use("/auth", authenticateBearer, authRoutes);
+routes.use("/products", authenticateBearer, productsRoutes);
+routes.use("/replenishment", authenticateBearer, replenishmentRoutes);
+routes.use("/auth", authRoutes);
 
 export default routes;

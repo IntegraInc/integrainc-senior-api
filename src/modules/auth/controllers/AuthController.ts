@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { AuthService } from "../services/AuthService";
+import { generateToken } from "../../../shared/utils/jwt";
 
 export class AuthController {
  private service: AuthService;
@@ -24,7 +25,12 @@ export class AuthController {
    if (!result.success) {
     return res.status(404).json(result);
    }
-   return res.json(result);
+   const token = generateToken(user);
+   return res.json({
+    success: true,
+    message: "Authenticated successfully.",
+    token,
+   });
   } catch (error: any) {
    console.error("Login error:", error.message);
    return res

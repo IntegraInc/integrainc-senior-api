@@ -2,12 +2,12 @@
  "version": 2,
  "builds": [
   {
-   "src": "dist/shared/http/server.js",
+   "src": "src/shared/http/server.ts",
    "use": "@vercel/node",
    "config": {
     "regions": ["gru1"]
    }
   }
  ],
- "routes": [{ "src": "/(.*)", "dest": "dist/shared/http/server.js" }]
+ "routes": [{ "src": "/(.*)", "dest": "src/shared/http/server.ts" }]
 }

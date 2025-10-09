@@ -33,7 +33,7 @@ export class SeniorClient {
     `;
 
   try {
-   const { data } = await axios.post(this.url, xmlBody, {
+   const { data } = await axios.post(this.url + this.userModule, xmlBody, {
     headers: {
      "Content-Type": "text/xml;charset=UTF-8",
      SOAPAction: this.url + this.userModule,
