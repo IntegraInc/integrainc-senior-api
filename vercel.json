@@ -1,12 +1,13 @@
 {
  "version": 2,
+ "regions": ["gru1"],
  "builds": [
   {
+   "env": {
+    "NODE_ENV": "production"
+   },
    "src": "src/shared/http/server.ts",
-   "use": "@vercel/node",
-   "config": {
-    "regions": ["gru1"]
-   }
+   "use": "@vercel/node"
   }
  ],
  "routes": [{ "src": "/(.*)", "dest": "src/shared/http/server.ts" }]
