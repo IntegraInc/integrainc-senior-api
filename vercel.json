@@ -3,9 +3,6 @@
  "regions": ["gru1"],
  "builds": [
   {
-   "env": {
-    "NODE_ENV": "production"
-   },
    "src": "src/shared/http/server.ts",
    "use": "@vercel/node"
   }
