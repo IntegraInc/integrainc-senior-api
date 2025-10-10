@@ -19,7 +19,10 @@ const swaggerOptions = {
    },
   ],
  },
- apis: [path.resolve(__dirname, "../modules/**/*.ts")],
+ apis: [
+  path.resolve(__dirname, "../modules/**/*.ts"), // local dev
+  path.resolve(__dirname, "../modules/**/*.js"), // deployed bundle
+ ],
 };
 
 export const swaggerSpec = swaggerJsdoc(swaggerOptions);
