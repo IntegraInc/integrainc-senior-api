@@ -6,6 +6,8 @@ import { ProductService } from "../services/ProductService";
  * /products:
  *   get:
  *     summary: Get paginated products list
+ *     security:
+ *      - bearerAuth: []   # 👈 Requires JWT
  *     description: Returns a paginated list of products from Senior, mapped into frontend-friendly fields.
  *     tags:
  *       - Products

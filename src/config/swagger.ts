@@ -12,10 +12,25 @@ const swaggerOptions = {
    description: "API documentation for Portal Plenitude backend",
   },
   servers: [
-   { url: "http://localhost:3000", description: "Local Server" },
    {
     url: "https://integrainc-senior-api.vercel.app",
     description: "Production",
+   },
+   { url: "http://localhost:3000", description: "Local" },
+  ],
+  components: {
+   securitySchemes: {
+    bearerAuth: {
+     type: "http",
+     scheme: "bearer",
+     bearerFormat: "JWT",
+     description: "Enter your JWT token here (no need to prefix with Bearer).",
+    },
+   },
+  },
+  security: [
+   {
+    bearerAuth: [],
    },
   ],
  },
