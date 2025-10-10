@@ -25,6 +25,16 @@ const swaggerOptions = {
 export const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
 export function setupSwagger(app: Express) {
- app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+ // Serve the static assets properly (important for Vercel)
+ app.use(
+  "/docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec, {
+   explorer: true,
+   customCssUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui.min.css",
+  })
+ );
+
  console.log("📘 Swagger docs available at /docs");
 }
