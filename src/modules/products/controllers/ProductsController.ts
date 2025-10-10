@@ -3,7 +3,7 @@ import { ProductService } from "../services/ProductService";
 
 /**
  * @openapi
- * /products:
+ * /products/all:
  *   get:
  *     summary: Get paginated products list
  *     security:
