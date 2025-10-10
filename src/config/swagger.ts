@@ -25,16 +25,31 @@ const swaggerOptions = {
 export const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
 export function setupSwagger(app: Express) {
- // Serve the static assets properly (important for Vercel)
- app.use(
-  "/docs",
-  swaggerUi.serve,
-  swaggerUi.setup(swaggerSpec, {
-   explorer: true,
-   customCssUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui.min.css",
-  })
- );
+ app.get("/docs", (_, res) => {
+  res.setHeader("Content-Type", "text/html");
+  res.send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Portal Integra API Docs</title>
+  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist/swagger-ui.css" />
+</head>
+<body>
+  <div id="swagger-ui"></div>
+  <script src="https://unpkg.com/swagger-ui-dist/swagger-ui-bundle.js"></script>
+  <script>
+    window.onload = () => {
+      SwaggerUIBundle({
+        spec: ${JSON.stringify(swaggerSpec)},
+        dom_id: '#swagger-ui',
+        presets: [SwaggerUIBundle.presets.apis],
+        layout: 'BaseLayout'
+      });
+    };
+  </script>
+</body>
+</html>`);
+ });
 
- console.log("📘 Swagger docs available at /docs");
+ console.log("📘 Swagger UI available at /docs");
 }
