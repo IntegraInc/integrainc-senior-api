@@ -37,3 +37,23 @@ export function mapProductData(products: any[]) {
   weightedAverage: p.MEDIA_PONDERADA,
  }));
 }
+export function mapFilterData(filters: any) {
+ return {
+  supplyer: (filters.fornecedor || []).map((f: any) => ({
+   code: f.codigo,
+   name: f.nome,
+  })),
+  paymentCondition: (filters.condicaoPagamento || []).map((c: any) => ({
+   code: c.codigo,
+   name: c.nome,
+  })),
+  paymentMethod: (filters.formaPagamento || []).map((f: any) => ({
+   code: f.codigo,
+   name: f.nome,
+  })),
+  family: (filters.familia || []).map((f: any) => ({
+   code: f.codigo,
+   name: f.nome,
+  })),
+ };
+}

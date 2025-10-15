@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { AuthService } from "../services/AuthService";
-import { generateToken } from "../../../shared/utils/jwt";
+import { createUserToken } from "../../../shared/utils/jwt";
 
 /**
  * @openapi
@@ -65,7 +65,7 @@ export class AuthController {
    if (!result.success) {
     return res.status(404).json(result);
    }
-   const token = generateToken(user);
+   const token = await createUserToken(user, password);
    return res.json({
     success: true,
     message: "Authenticated successfully.",
