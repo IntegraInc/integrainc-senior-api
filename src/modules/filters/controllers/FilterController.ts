@@ -4,7 +4,7 @@ import { FilterService } from "../services/FilterService";
 /**
  * @openapi
  * /utils/filters:
- *   post:
+ *   get:
  *     summary: Get the filters from Replenishment module
  *     tags:
  *       - Filter
