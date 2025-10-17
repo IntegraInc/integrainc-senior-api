@@ -9,24 +9,9 @@ export function mapProductData(products: any[]) {
   productCode: p.CODPRO,
   barcode: p.CODBAR,
   description: p.DESPRO,
-  //   origin: p.DESORI,
   family: p.DESFAM,
-  //   status: p.SITPRO,
-
   // 🔹 Pricing information
-  basePrice: p.PREBAS, // Base sale price
-  //   lastPurchaseCost: p.USU_PRECUS, // Last cost
-  //   averageCost: p.USU_PRECAP, // Average cost
-
-  // 🔹 Financial metrics
-  //   discountCap: p.DESCONTO_CAPA, // Discount applied on base price
-  //   margin: p.MARGEM, // Profit margin %
-  //   markup: p.MARKUP, // Markup %
-
-  // 🔹 Automatic pricing targets
-  //   autoTargetMargin: p.AUTOMATICO_PRECO_MARGEM_ALVO,
-  //   autoTargetMarkup: p.AUTOMATICO_PRECO_MARKUP_ALVO,
-
+  lastPurchaseCost: p.PRECUS, // Last cost
   // 🔹 Inventory information
   availableStock: p.ESTOQUE_DISPONIVEL, // Available (free) stock
   physicalStock: p.ESTOQUE_FISICO, // Physical stock
