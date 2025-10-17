@@ -52,7 +52,7 @@ export class ProductService {
   } catch (error: any) {
    return {
     success: false,
-    message: "Failed to decode or parse Base64 JSON.",
+    message: "Erro ao buscar lista de produtos.",
     details: error.message,
    };
   }

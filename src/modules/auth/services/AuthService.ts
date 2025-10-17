@@ -31,7 +31,7 @@ export class AuthService {
    return {
     success: false,
     error: {
-     message: "Invalid username or password.",
+     message: "Nome de usuário inválido ou senha incorreta.",
     },
    };
   }
