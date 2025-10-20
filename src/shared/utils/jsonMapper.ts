@@ -20,6 +20,7 @@ export function mapProductData(products: any[]) {
 
   // 🔹 Sales metrics
   //   salesLast3Months: p.QTDVEN3M, // Quantity sold in last 3 months
+  stockTurnover: p.GIRO_ESTOQUE, // Stock turnover rate
   weightedAveragePrice: p.MEDIA_PONDERADA, // Weighted average price
   purchaseSuggestion: p.SUGESTAO_COMPRA, // Suggested purchase qty
   quantityToBuy: p.QTD_COMPRAR, // Qty recommended to buy
@@ -27,10 +28,10 @@ export function mapProductData(products: any[]) {
   average6Months: p.MEDIA_6M,
 
   // 🔹 Monthly sales (array of months and totals)
-  monthlySales: p.VENDAS_MENSAL?.map((m: Record<string, number>) => {
-   const [month, value] = Object.entries(m)[0];
-   return { month, total: value };
-  }),
+  monthlySales: p.VENDAS_MENSAL?.map((m: any) => ({
+   month: m.MES,
+   total: m.TOTAL,
+  })),
 
   // 🔹 Average of last 6 months (already computed in SQL)
  }));
