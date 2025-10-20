@@ -7,11 +7,13 @@ export class SeniorClient {
  private readonly url: string;
  private readonly userModule: string;
  private readonly productModule: string;
+ private readonly buyingOrderModule: string;
 
  constructor() {
   this.url = soapConfig.seniorUrl;
   this.userModule = soapConfig.userModule;
   this.productModule = soapConfig.productModule;
+  this.buyingOrderModule = soapConfig.buyingOrderModule;
  }
 
  async authenticate(user: string, password: string, encryption: number) {
@@ -125,6 +127,65 @@ export class SeniorClient {
   } catch (error: any) {
    console.error("❌ Senior SOAP authentication error:", error.message);
    throw new Error("Failed to authenticate with Senior SOAP service.");
+  }
+ }
+
+ async gravarOrdensCompra(user: any, password: any, params: any) {
+  const encryption = 0;
+
+  const produtosXml = params.products
+   .map(
+    (p: any) => `
+      <produtos>
+        <codPro>${p.productCode}</codPro>
+        <qtdPed>${p.orderQuantity}</qtdPed>
+        <preUni>${p.unityPrice}</preUni>
+      </produtos>`
+   )
+   .join("");
+
+  const xmlBody = `
+    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://services.senior.com.br">
+      <soapenv:Body>
+        <ser:GravarOrdensCompra_8>
+          <user>${user}</user>
+          <password>${password}</password>
+          <encryption>${encryption}</encryption>
+          <parameters>
+            <dadosGerais>
+              <codCpg>${params.paymentCondition}</codCpg>
+              <codEmp>${params.company}</codEmp>
+              <codFil>${params.branch}</codFil>
+              <codFor>${params.supplyerCode}</codFor>
+              ${produtosXml}
+            </dadosGerais>
+            <fechaOC>N</fechaOC>
+            <tipoProcessamento>1</tipoProcessamento>
+            <identificadorSistema>IIP</identificadorSistema>
+          </parameters>
+        </ser:GravarOrdensCompra_8>
+      </soapenv:Body>
+    </soapenv:Envelope>
+  `;
+
+  try {
+   const { data } = await axios.post(
+    `${this.url + this.buyingOrderModule}`,
+    xmlBody,
+    {
+     headers: {
+      "Content-Type": "text/xml;charset=UTF-8",
+      SOAPAction: this.url + this.buyingOrderModule,
+     },
+     timeout: soapConfig.timeout,
+    }
+   );
+
+   const parsed = await parseStringPromise(data, { explicitArray: false });
+   return parsed;
+  } catch (error: any) {
+   console.error("❌ Senior SOAP order error:", error.message);
+   throw new Error("Failed to send buying order to Senior SOAP service.");
   }
  }
 }

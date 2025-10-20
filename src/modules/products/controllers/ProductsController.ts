@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { ProductService } from "../services/ProductService";
+import { getSeniorCredentialsFromToken } from "../../../shared/utils/jwt";
 
 /**
  * @openapi
@@ -159,6 +160,116 @@ export class ProductsController {
    return res
     .status(404)
     .json({ error: "Authentication failed.", details: error.message });
+  }
+ }
+
+ /**
+  * @openapi
+  * /products/buying-order:
+  *   post:
+  *     summary: Send a Buying Order (Ordem de Compra) to Senior ERP
+  *     description: Creates a new buying order in Senior ERP using the SOAP service `GravarOrdensCompra_8`.
+  *     security:
+  *      - bearerAuth: []
+  *     tags:
+  *       - Products
+  *     requestBody:
+  *       required: true
+  *       content:
+  *         application/json:
+  *           schema:
+  *             type: object
+  *             required:
+  *               - paymentCondition
+  *               - company
+  *               - branch
+  *               - supplyerCode
+  *               - products
+  *             properties:
+  *               paymentCondition:
+  *                 type: string
+  *                 description: Payment condition code
+  *                 example: "001"
+  *               company:
+  *                 type: integer
+  *                 description: Company code (COD_EMP)
+  *                 example: 1
+  *               branch:
+  *                 type: integer
+  *                 description: Branch code (COD_FIL)
+  *                 example: 1
+  *               supplyerCode:
+  *                 type: integer
+  *                 description: Supplier code (COD_FOR)
+  *                 example: 25
+  *               products:
+  *                 type: array
+  *                 description: List of products included in the purchase order
+  *                 items:
+  *                   type: object
+  *                   required:
+  *                     - productCode
+  *                     - orderQuantity
+  *                     - unityPrice
+  *                   properties:
+  *                     productCode:
+  *                       type: string
+  *                       description: Product code
+  *                       example: "0100032"
+  *                     orderQuantity:
+  *                       type: number
+  *                       description: Quantity requested
+  *                       example: 10
+  *                     unityPrice:
+  *                       type: number
+  *                       description: Unit price for the product
+  *                       example: 59.9
+  *     responses:
+  *       200:
+  *         description: Buying order sent successfully
+  *         content:
+  *           application/json:
+  *             schema:
+  *               type: object
+  *               properties:
+  *                 success:
+  *                   type: boolean
+  *                 message:
+  *                   type: string
+  *                 data:
+  *                   type: object
+  *       401:
+  *         description: Missing or invalid authorization header
+  *       500:
+  *         description: Internal error or SOAP failure
+  */
+ async postBuyingOrder(req: Request, res: Response) {
+  try {
+   const authHeader = req.headers.authorization;
+   if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({
+     success: false,
+     message: "Missing or invalid Authorization header.",
+    });
+   }
+
+   const token = authHeader.split(" ")[1];
+   const { username, password } = await getSeniorCredentialsFromToken(token);
+
+   const result = await this.service.sendBuyingOrder(
+    username,
+    password,
+    req.body
+   );
+
+   return res.status(result.success ? 200 : 500).json(result);
+  } catch (error: any) {
+   console.error("❌ Buying order controller error:", error.message);
+   return res.status(500).json({
+    success: false,
+    message: "Error sending buying order.",
+    details: error.message,
+   });
   }
  }
 }
