@@ -67,7 +67,7 @@ export class ProductService {
    );
 
    const parsed = extractSoapFields<{ response?: string }>(response, [
-    "result",
+    "dadosRetorno",
    ]);
 
    if (parsed.error) {
@@ -78,21 +78,10 @@ export class ProductService {
     };
    }
 
-   const base64Data = parsed.data?.response;
-   if (!base64Data) {
-    return {
-     success: false,
-     message: "No Base64 data found in SOAP response.",
-    };
-   }
-
-   const decoded = Buffer.from(base64Data, "base64").toString("latin1");
-   const jsonData = JSON.parse(decoded);
-
    return {
     success: true,
     message: "Buying order sent successfully.",
-    data: jsonData,
+    data: parsed.data,
    };
   } catch (error: any) {
    return {
