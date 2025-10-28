@@ -9,7 +9,8 @@ export function mapProductData(products: any[]) {
   productCode: p.CODPRO,
   barcode: p.CODBAR,
   description: p.DESPRO,
-  family: p.DESFAM,
+  familyName: p.DESFAM,
+  familyCode: p.CODFAM,
   // 🔹 Pricing information
   lastPurchaseCost: p.PRECUS, // Last cost
   // 🔹 Inventory information

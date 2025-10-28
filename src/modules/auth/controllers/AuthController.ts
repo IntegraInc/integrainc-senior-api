@@ -22,7 +22,7 @@ import { createUserToken } from "../../../shared/utils/jwt";
  *               user:
  *                 type: string
  *               password:
- *                 type: number
+ *                 type: string
  *     responses:
  *       201:
  *         description: User successfully logged in
