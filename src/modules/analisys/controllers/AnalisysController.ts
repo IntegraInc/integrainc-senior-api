@@ -1,20 +1,17 @@
 import { Request, Response } from "express";
-import { ProductService } from "../services/ProductService";
+import { AnalisysService } from "../services/AnalisysService";
 import { getSeniorCredentialsFromToken } from "../../../shared/utils/jwt";
 
 /**
  * @openapi
- * /products/all:
+ * /analisys/all:
  *   get:
- *     summary: Get paginated products with cost, margin, and pricing analysis
+ *     summary: Get paginated products list by replacing Analisys data
  *     security:
- *       - bearerAuth: []   # JWT authentication required
- *     description: |
- *       Retrieves a paginated list of products from the Senior ERP, including cost details,
- *       markup/margin analysis, and suggested prices based on current cost and markup rules.
- *       Returns data already mapped into frontend-friendly JSON fields.
+ *      - bearerAuth: []   # 👈 Requires JWT
+ *     description: Returns a paginated list of products from Senior, mapped into frontend-friendly fields.
  *     tags:
- *       - Products
+ *       - Analisys
  *     parameters:
  *       - name: page
  *         in: query
@@ -30,16 +27,9 @@ import { getSeniorCredentialsFromToken } from "../../../shared/utils/jwt";
  *         schema:
  *           type: integer
  *           example: 50
- *       - name: tablePrice
- *         in: query
- *         required: true
- *         description: Price table code (e.g., TPM)
- *         schema:
- *           type: string
- *           example: "TPM"
  *     responses:
  *       200:
- *         description: Paginated product list successfully retrieved
+ *         description: Paginated list of products successfully retrieved
  *         content:
  *           application/json:
  *             schema:
@@ -50,7 +40,7 @@ import { getSeniorCredentialsFromToken } from "../../../shared/utils/jwt";
  *                   example: true
  *                 total:
  *                   type: integer
- *                   example: 1280
+ *                   example: 1245
  *                 page:
  *                   type: integer
  *                   example: 1
@@ -64,89 +54,95 @@ import { getSeniorCredentialsFromToken } from "../../../shared/utils/jwt";
  *                     properties:
  *                       productCode:
  *                         type: string
- *                         example: "0100002"
+ *                         example: "12345"
  *                       barcode:
  *                         type: string
- *                         example: "7898521815981"
+ *                         example: "7891234567890"
  *                       description:
  *                         type: string
- *                         example: "Bíblia de Estudo | Letra Normal | Capa Couro Vinho"
- *                       familyName:
+ *                         example: "Chocolate Bar 90g"
+ *                       origin:
  *                         type: string
- *                         example: "SBB"
- *                       familyCode:
+ *                         example: "Nacional"
+ *                       family:
  *                         type: string
- *                         example: "0001"
- *                       category:
+ *                         example: "Alimentos"
+ *                       status:
  *                         type: string
- *                         example: "Livros"
- *                       lastPurchaseCost:
+ *                         example: "A"
+ *                       basePrice:
  *                         type: number
- *                         example: 120.50
+ *                         example: 5.49
+ *                       lastCost:
+ *                         type: number
+ *                         example: 4.20
  *                       avgCost:
  *                         type: number
- *                         example: 122.35
- *                       discountPercent:
+ *                         example: 4.35
+ *                       discountCap:
  *                         type: number
  *                         example: 0.05
- *                       markupPercent:
+ *                       margin:
  *                         type: number
- *                         example: 0.45
- *                       marginPercent:
+ *                         example: 0.25
+ *                       markup:
  *                         type: number
- *                         example: 28.57
- *                       suggestedPriceByMargin:
+ *                         example: 1.33
+ *                       autoTargetMargin:
  *                         type: number
- *                         example: 169.00
- *                       suggestedPriceByMarkup:
+ *                         example: 0.3
+ *                       autoTargetMarkup:
  *                         type: number
- *                         example: 174.73
- *                       availableStock:
+ *                         example: 1.4
+ *                       stock:
  *                         type: number
- *                         example: 42
+ *                         example: 123
+ *                       minStock:
+ *                         type: number
+ *                         example: 10
  *                       lastPurchaseDate:
  *                         type: string
  *                         format: date
- *                         example: "2025-09-25"
+ *                         example: "2025-09-15"
+ *                       sales3Months:
+ *                         type: number
+ *                         example: 420
+ *                       weightedAverage:
+ *                         type: number
+ *                         example: 4.58
  *       400:
- *         description: Missing required query parameters (page, limit, codTpr)
+ *         description: Missing pagination parameters (page or limit)
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 success:
- *                   type: boolean
- *                   example: false
  *                 error:
  *                   type: string
- *                   example: "You must provide page, limit and codTpr"
+ *                   example: "You must provide page and limit"
  *       404:
- *         description: Products not found or error fetching data from Senior
+ *         description: Products not found or error fetching from Senior
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 success:
- *                   type: boolean
- *                   example: false
  *                 error:
  *                   type: string
  *                   example: "No products found."
  *                 details:
  *                   type: string
- *                   example: "Senior ERP did not return data"
+ *                   example: "Senior API did not return data"
  */
 
-export class ProductsController {
- private service: ProductService;
+export class AnalisysController {
+ private service: AnalisysService;
 
  constructor() {
-  this.service = new ProductService();
+  this.service = new AnalisysService();
  }
 
- async getProducts(req: Request, res: Response) {
+ async getAnalisys(req: Request, res: Response) {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -158,20 +154,19 @@ export class ProductsController {
 
   const token = authHeader.split(" ")[1];
   const { username, password } = await getSeniorCredentialsFromToken(token);
-  const { page, limit, tablePrice } = req.query;
+  const { page, limit } = req.query;
 
-  if (!page || !limit || !tablePrice) {
+  if (!page || !limit) {
    return res.status(400).json({ error: "You must provide page and limit" });
   }
 
   try {
-   const result = await this.service.getProducts(
+   const result = await this.service.getAnalysis(
     username,
     password,
     0,
     limit,
-    page,
-    tablePrice as string
+    page
    );
    if (!result.success) {
     return res.status(404).json(result);
@@ -187,14 +182,14 @@ export class ProductsController {
 
  /**
   * @openapi
-  * /products/change-price:
+  * /analisys/buying-order:
   *   post:
   *     summary: Send a Buying Order (Ordem de Compra) to Senior ERP
   *     description: Creates a new buying order in Senior ERP using the SOAP service `GravarOrdensCompra_8`.
   *     security:
   *      - bearerAuth: []
   *     tags:
-  *       - Products
+  *       - Analisys
   *     requestBody:
   *       required: true
   *       content:
@@ -265,7 +260,7 @@ export class ProductsController {
   *       500:
   *         description: Internal error or SOAP failure
   */
- async changePrice(req: Request, res: Response) {
+ async postBuyingOrder(req: Request, res: Response) {
   try {
    const authHeader = req.headers.authorization;
    if (!authHeader || !authHeader.startsWith("Bearer ")) {

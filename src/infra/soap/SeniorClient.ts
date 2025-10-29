@@ -51,10 +51,14 @@ export class SeniorClient {
   }
  }
 
- async exportTablePrice(limit: number, page: number) {
-  const user = "portal";
-  const password = "Senior@2025";
-  const encryption = 0;
+ async exportTablePrice(
+  user: string,
+  password: string,
+  encryption: number,
+  limit: number,
+  page: number,
+  tablePrice: string
+ ) {
   const xmlBody = `
       <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://services.senior.com.br">
    <soapenv:Header/>
@@ -66,8 +70,53 @@ export class SeniorClient {
          <parameters>
             <limit>${limit}</limit>
             <page>${page}</page>
+            <codtpr>${tablePrice}</codtpr>
          </parameters>
       </ser:exportaTabelaPrecos>
+   </soapenv:Body>
+</soapenv:Envelope>
+    `;
+
+  try {
+   const { data } = await axios.post(
+    `${this.url + this.productModule}`,
+    xmlBody,
+    {
+     headers: {
+      "Content-Type": "text/xml;charset=UTF-8",
+      SOAPAction: this.url + this.productModule,
+     },
+     timeout: soapConfig.timeout,
+    }
+   );
+
+   const parsed = await parseStringPromise(data, { explicitArray: false });
+   return parsed;
+  } catch (error: any) {
+   console.error("❌ Senior SOAP authentication error:", error.message);
+   throw new Error("Failed to authenticate with Senior SOAP service.");
+  }
+ }
+ async exportAnalisys(
+  user: string,
+  password: string,
+  encryption: number,
+  limit: number,
+  page: number
+ ) {
+  const xmlBody = `
+      <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://services.senior.com.br">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <ser:exportaAnaliseReposicao>
+         <user>${user}</user>
+         <password>${password}</password>
+         <encryption>${encryption}</encryption>
+         <parameters>
+            <limit>${limit}</limit>
+            <page>${page}</page>
+         </parameters>
+      </ser:exportaAnaliseReposicao>
    </soapenv:Body>
 </soapenv:Envelope>
     `;
@@ -105,6 +154,46 @@ export class SeniorClient {
          <parameters>
          </parameters>
       </ser:buscaFiltros>
+   </soapenv:Body>
+</soapenv:Envelope>
+    `;
+
+  try {
+   const { data } = await axios.post(
+    `${this.url + this.productModule}`,
+    xmlBody,
+    {
+     headers: {
+      "Content-Type": "text/xml;charset=UTF-8",
+      SOAPAction: this.url + this.productModule,
+     },
+     timeout: soapConfig.timeout,
+    }
+   );
+
+   const parsed = await parseStringPromise(data, { explicitArray: false });
+   return parsed;
+  } catch (error: any) {
+   console.error("❌ Senior SOAP authentication error:", error.message);
+   throw new Error("Failed to authenticate with Senior SOAP service.");
+  }
+ }
+ async getFiltersTablePrice(
+  user: string,
+  password: string,
+  encryption: number
+ ) {
+  const xmlBody = `
+    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://services.senior.com.br">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <ser:buscaFiltrosTabelaPreco>
+         <user>${user}</user>
+         <password>${password}</password>
+         <encryption>${encryption}</encryption>
+         <parameters>
+         </parameters>
+      </ser:buscaFiltrosTabelaPreco>
    </soapenv:Body>
 </soapenv:Envelope>
     `;

@@ -1,30 +1,31 @@
 import { SeniorClient } from "../../../infra/soap/SeniorClient";
-import { mapProductData } from "../../../shared/utils/jsonMapper";
+import {
+ mapAnalisysData,
+ mapProductData,
+} from "../../../shared/utils/jsonMapper";
 import { getSeniorCredentialsFromToken } from "../../../shared/utils/jwt";
 import { extractSoapFields } from "../../../shared/utils/soapParser";
 
-export class ProductService {
+export class AnalisysService {
  private seniorClient: SeniorClient;
 
  constructor() {
   this.seniorClient = new SeniorClient();
  }
 
- async getProducts(
+ async getAnalysis(
   user: string,
   password: string,
   encryption: number,
   limit: any,
-  page: any,
-  tablePrice: string
+  page: any
  ) {
-  const response = await this.seniorClient.exportTablePrice(
+  const response = await this.seniorClient.exportAnalisys(
    user,
    password,
    encryption,
    limit,
-   page,
-   tablePrice
+   page
   );
 
   const parsed = extractSoapFields<{ response?: string }>(response, [
@@ -57,17 +58,17 @@ export class ProductService {
    const jsonData = JSON.parse(decoded);
 
    // ✅ Translate field names
-   const mapped = mapProductData(jsonData);
+   const mapped = mapAnalisysData(jsonData);
 
    return {
     success: true,
-    message: "Products fetched successfully.",
+    message: "Analisys fetched successfully.",
     data: mapped,
    };
   } catch (error: any) {
    return {
     success: false,
-    message: "Erro ao buscar lista de produtos.",
+    message: "Erro ao buscar lista analise de reposição.",
     details: error.message,
    };
   }

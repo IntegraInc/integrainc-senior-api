@@ -3,7 +3,7 @@
  * Converts uppercase database fields into readable camelCase keys.
  */
 
-export function mapProductData(products: any[]) {
+export function mapAnalisysData(products: any[]) {
  return products.map((p) => ({
   // 🔹 Basic product information
   productCode: p.CODPRO,
@@ -37,6 +37,34 @@ export function mapProductData(products: any[]) {
   // 🔹 Average of last 6 months (already computed in SQL)
  }));
 }
+export function mapProductData(products: any[]) {
+ return products.map((p) => ({
+  // 🔹 Basic product information
+  productCode: p.CODPRO,
+  barcode: p.CODBAR,
+  description: p.DESPRO,
+  familyName: p.DESFAM,
+  familyCode: p.CODFAM,
+  category: p.DESMAR,
+
+  // 🔹 Pricing information
+  lastPurchaseCost: p.PRECUS, // Custo de aquisição (último custo)
+  avgCost: p.PRECAP, // Custo médio / ajustado
+  discountPercent: p.PERCAP, // Percentual de desconto aplicado
+  markupPercent: p.MARKUP, // Markup configurado
+  marginPercent: p.MARGEM_PERCENTUAL, // Margem real calculada
+  suggestedPriceByMargin: p.PRECO_SUGERIDO_MARGEM, // Preço sugerido baseado na margem real
+  suggestedPriceByMarkup: p.PRECO_SUGERIDO_MARKUP, // Preço sugerido baseado no markup
+
+  // 🔹 Inventory information
+  availableStock: p.ESTOQUE_DISPONIVEL, // Estoque disponível
+  lastPurchaseDate: p.DATA_ULTIMA_COMPRA, // Última data de compra
+
+  // 🔹 Metadata / derived info (optional placeholders)
+  // physicalStock: p.ESTOQUE_FISICO,       // se vier depois, manter estrutura
+  // minStock: p.ESTMIN,                    // caso adicione o campo futuramente
+ }));
+}
 
 export function mapFilterData(filters: any) {
  return {
@@ -55,6 +83,13 @@ export function mapFilterData(filters: any) {
   family: (filters.familia || []).map((f: any) => ({
    code: f.codigo,
    name: f.nome,
+  })),
+ };
+}
+export function mapFilterTablePriceData(filters: any) {
+ return {
+  tablePrice: (filters.tabelaPreco || []).map((f: any) => ({
+   code: f.codigo,
   })),
  };
 }
