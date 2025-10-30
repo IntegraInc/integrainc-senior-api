@@ -61,7 +61,7 @@ export class ProductService {
 
    return {
     success: true,
-    message: "Products fetched successfully.",
+    message: "Produtos buscados com sucesso.",
     data: mapped,
    };
   } catch (error: any) {
@@ -94,7 +94,7 @@ export class ProductService {
 
    return {
     success: true,
-    message: "Buying order sent successfully.",
+    message: "Ordem de compra gerada com sucesso.",
     data: parsed.data,
    };
   } catch (error: any) {

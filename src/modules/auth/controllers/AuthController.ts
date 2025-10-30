@@ -68,7 +68,7 @@ export class AuthController {
    const token = await createUserToken(user, password);
    return res.json({
     success: true,
-    message: "Authenticated successfully.",
+    message: "Autenticado com sucesso.",
     token,
    });
   } catch (error: any) {

@@ -3,6 +3,8 @@
  * Converts uppercase database fields into readable camelCase keys.
  */
 
+import { formatDate } from "./formatters";
+
 export function mapAnalisysData(products: any[]) {
  return products.map((p) => ({
   // 🔹 Basic product information
@@ -17,12 +19,12 @@ export function mapAnalisysData(products: any[]) {
   availableStock: p.ESTOQUE_DISPONIVEL, // Available (free) stock
   physicalStock: p.ESTOQUE_FISICO, // Physical stock
   minStock: p.ESTMIN, // Minimum stock (safety)
-  lastPurchaseDate: p.DATA_ULTIMA_COMPRA, // Last purchase date
+  lastPurchaseDate: formatDate(p.DATA_ULTIMA_COMPRA), // Last purchase date
 
   // 🔹 Sales metrics
   //   salesLast3Months: p.QTDVEN3M, // Quantity sold in last 3 months
   stockTurnover: p.GIRO_ESTOQUE, // Stock turnover rate
-  weightedAveragePrice: p.MEDIA_PONDERADA, // Weighted average price
+  weightedAveragePrice: p.MEDIA_PONDERADA, // Weighted average price -inativado
   purchaseSuggestion: p.SUGESTAO_COMPRA, // Suggested purchase qty
   quantityToBuy: p.QTD_COMPRAR, // Qty recommended to buy
   totalSales: p.VENDAS_TOTAL, // Total sales sum
@@ -82,7 +84,7 @@ export function mapFilterData(filters: any) {
   })),
   family: (filters.familia || []).map((f: any) => ({
    code: f.codigo,
-   name: f.nome,
+   name: f.codigo + "-" + f.nome,
   })),
  };
 }

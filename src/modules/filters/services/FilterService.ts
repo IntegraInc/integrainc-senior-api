@@ -66,14 +66,14 @@ export class FilterService {
 
    return {
     success: true,
-    message: "Filters fetched successfully.",
+    message: "Filtros buscados com sucesso.",
     data: mapped,
    };
   } catch (error: any) {
-   console.error("❌ Error fetching filters:", error.message);
+   console.error("❌ Erro ao buscar filtros: ", error.message);
    return {
     success: false,
-    message: "Error fetching filters.",
+    message: "Erro ao buscar filtros.",
     details: error.message,
    };
   }
@@ -124,11 +124,11 @@ export class FilterService {
 
    return {
     success: true,
-    message: "Filters fetched successfully.",
+    message: "Filtros buscados com sucesso.",
     data: mapped,
    };
   } catch (error: any) {
-   console.error("❌ Error fetching filters:", error.message);
+   console.error("❌ Erro ao buscar filtros:", error.message);
    return {
     success: false,
     message: "Error fetching filters.",

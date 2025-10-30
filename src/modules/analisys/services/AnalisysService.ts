@@ -62,7 +62,7 @@ export class AnalisysService {
 
    return {
     success: true,
-    message: "Analisys fetched successfully.",
+    message: "Analise de reposição buscada com sucesso.",
     data: mapped,
    };
   } catch (error: any) {
@@ -81,7 +81,7 @@ export class AnalisysService {
     orderData
    );
 
-   const parsed = extractSoapFields<{ response?: string }>(response, [
+   const parsed = extractSoapFields<{ dadosRetorno?: any }>(response, [
     "dadosRetorno",
    ]);
 
@@ -93,10 +93,12 @@ export class AnalisysService {
     };
    }
 
+   const orderNumber = parsed.data?.dadosRetorno?.numOcp;
+
    return {
     success: true,
-    message: "Buying order sent successfully.",
-    data: parsed.data,
+    message: "Ordem de compra gerada com sucesso.",
+    data: { orderNumber: orderNumber },
    };
   } catch (error: any) {
    return {
