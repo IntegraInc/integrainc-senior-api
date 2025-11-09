@@ -18,21 +18,23 @@ export class AnalisysService {
   password: string,
   encryption: number,
   limit: any,
-  page: any
+  page: any,
+  family?: any
  ) {
   const response = await this.seniorClient.exportAnalisys(
    user,
    password,
    encryption,
    limit,
-   page
+   page,
+   family
   );
 
   const parsed = extractSoapFields<{ response?: string }>(response, [
    "response",
   ]);
 
-  // 🧠 Case 1: SOAP execution failure
+  // 🧠 Caso de erro no SOAP
   if (parsed.error) {
    return {
     success: false,
@@ -42,37 +44,45 @@ export class AnalisysService {
   }
 
   const base64Data = parsed.data?.response;
-
   if (!base64Data) {
    return {
     success: false,
-    message: "No Base64 data found in SOAP response.",
+    message: "Nenhum dado Base64 encontrado na resposta SOAP.",
    };
   }
 
   try {
-   // 🔍 Decode Base64 → string
+   // 🔍 Decode Base64 → string JSON
    const decoded = Buffer.from(base64Data, "base64").toString("latin1");
-
-   // 🧩 Parse JSON safely
    const jsonData = JSON.parse(decoded);
 
-   // ✅ Translate field names
+   // 🧩 Mapeia campos pro formato frontend-friendly
    const mapped = mapAnalisysData(jsonData);
+
+   // 🔢 Calcula paginação com base no total retornado
+   const totalItems = Array.isArray(mapped) ? mapped.length : 0;
+   const totalPages = Math.ceil(totalItems / limit);
 
    return {
     success: true,
-    message: "Analise de reposição buscada com sucesso.",
+    message: "Análise de reposição buscada com sucesso.",
+    pagination: {
+     totalItems,
+     totalPages,
+     currentPage: page,
+     limit,
+    },
     data: mapped,
    };
   } catch (error: any) {
    return {
     success: false,
-    message: "Erro ao buscar lista analise de reposição.",
+    message: "Erro ao processar análise de reposição.",
     details: error.message,
    };
   }
  }
+
  async sendBuyingOrder(user: string, password: string, orderData: any) {
   try {
    const response = await this.seniorClient.gravarOrdensCompra(
