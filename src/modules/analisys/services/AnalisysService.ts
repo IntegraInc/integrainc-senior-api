@@ -49,6 +49,7 @@ export class AnalisysService {
   const pagination = {
    totalItems: Number(parsed.data?.paginacao?.totalRegistros) || 0,
    totalPages: Number(parsed.data?.paginacao?.totalPaginas) || 0,
+   currentPage: page,
   };
 
   if (!base64Data) {
