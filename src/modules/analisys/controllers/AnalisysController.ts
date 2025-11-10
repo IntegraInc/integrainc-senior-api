@@ -15,14 +15,12 @@ import { getSeniorCredentialsFromToken } from "../../../shared/utils/jwt";
  *     parameters:
  *       - name: page
  *         in: query
- *         required: true
  *         description: Page number for pagination
  *         schema:
  *           type: integer
  *           example: 1
  *       - name: limit
  *         in: query
- *         required: true
  *         description: Number of products per page
  *         schema:
  *           type: integer
@@ -156,9 +154,9 @@ export class AnalisysController {
   const { username, password } = await getSeniorCredentialsFromToken(token);
   const { page, limit } = req.query;
 
-  if (!page || !limit) {
-   return res.status(400).json({ error: "You must provide page and limit" });
-  }
+  // if (!page || !limit) {
+  //  return res.status(400).json({ error: "You must provide page and limit" });
+  // }
 
   try {
    const result = await this.service.getAnalysis(

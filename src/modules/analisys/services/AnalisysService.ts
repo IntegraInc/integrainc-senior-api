@@ -1,4 +1,5 @@
 import { SeniorClient } from "../../../infra/soap/SeniorClient";
+import { getCache, setCache } from "../../../shared/utils/cache";
 import {
  mapAnalisysData,
  mapProductData,
@@ -17,9 +18,25 @@ export class AnalisysService {
   user: string,
   password: string,
   encryption: number,
-  limit: any,
-  page: any
+  limit: any = 999999,
+  page: any = 1
  ) {
+  const cacheKey = `analysis:${user}:${limit}:${page}`;
+
+  // 1️⃣ Tenta pegar do cache
+  const cached = await getCache<any>(cacheKey);
+  if (cached) {
+   console.log("✅ Cache hit → analysis");
+   return {
+    success: true,
+    message: "Análise carregada do cache.",
+    data: cached,
+   };
+  }
+
+  console.log("🔄 Cache miss → consultando SOAP...");
+
+  // 2️⃣ Executa chamada SOAP
   const response = await this.seniorClient.exportAnalisys(
    user,
    password,
@@ -60,15 +77,18 @@ export class AnalisysService {
    // ✅ Translate field names
    const mapped = mapAnalisysData(jsonData);
 
+   // 3️⃣ Armazena no cache por 5 minutos (300 segundos)
+   await setCache(cacheKey, mapped, 300);
+
    return {
     success: true,
-    message: "Analise de reposição buscada com sucesso.",
+    message: "Análise de reposição buscada com sucesso.",
     data: mapped,
    };
   } catch (error: any) {
    return {
     success: false,
-    message: "Erro ao buscar lista analise de reposição.",
+    message: "Erro ao buscar lista de análise de reposição.",
     details: error.message,
    };
   }

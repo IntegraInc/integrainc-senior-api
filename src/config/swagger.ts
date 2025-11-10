@@ -17,6 +17,10 @@ const swaggerOptions = {
     description: "Production",
    },
    { url: "http://localhost:3000", description: "Local" },
+   {
+    url: "https://integrainc-senior-api-stage.vercel.app",
+    description: "stage",
+   },
   ],
   components: {
    securitySchemes: {
