@@ -53,16 +53,10 @@ import { getSeniorCredentialsFromToken } from "../../../shared/utils/jwt";
  *                   properties:
  *                     totalItems:
  *                       type: integer
- *                       example: 250
+ *                       example: 16458
  *                     totalPages:
  *                       type: integer
- *                       example: 1
- *                     currentPage:
- *                       type: integer
- *                       example: 5
- *                     limit:
- *                       type: integer
- *                       example: 250
+ *                       example: 1325
  *                 data:
  *                   type: array
  *                   items:
