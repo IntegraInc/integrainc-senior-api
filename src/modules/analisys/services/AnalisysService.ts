@@ -1,3 +1,4 @@
+import { parse } from "path";
 import { SeniorClient } from "../../../infra/soap/SeniorClient";
 import {
  mapAnalisysData,
@@ -30,9 +31,10 @@ export class AnalisysService {
    family
   );
 
-  const parsed = extractSoapFields<{ response?: string }>(response, [
-   "response",
-  ]);
+  const parsed = extractSoapFields<{ dados?: string; paginacao?: any }>(
+   response,
+   ["dados", "paginacao"]
+  );
 
   // 🧠 Caso de erro no SOAP
   if (parsed.error) {
@@ -43,7 +45,12 @@ export class AnalisysService {
    };
   }
 
-  const base64Data = parsed.data?.response;
+  const base64Data = parsed.data?.dados;
+  const pagination = {
+   totalItems: Number(parsed.data?.paginacao?.totalRegistros) || 0,
+   totalPages: Number(parsed.data?.paginacao?.totalPaginas) || 0,
+  };
+
   if (!base64Data) {
    return {
     success: false,
@@ -59,19 +66,10 @@ export class AnalisysService {
    // 🧩 Mapeia campos pro formato frontend-friendly
    const mapped = mapAnalisysData(jsonData);
 
-   // 🔢 Calcula paginação com base no total retornado
-   const totalItems = Array.isArray(mapped) ? mapped.length : 0;
-   const totalPages = Math.ceil(totalItems / limit);
-
    return {
     success: true,
     message: "Análise de reposição buscada com sucesso.",
-    pagination: {
-     totalItems,
-     totalPages,
-     currentPage: page,
-     limit,
-    },
+    pagination,
     data: mapped,
    };
   } catch (error: any) {
