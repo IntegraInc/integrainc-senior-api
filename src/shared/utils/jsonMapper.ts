@@ -26,7 +26,7 @@ export function mapAnalisysData(products: any[]) {
   stockTurnover: p.GIRO_ESTOQUE, // Stock turnover rate
   weightedAveragePrice: p.MEDIA_PONDERADA, // Weighted average price -inativado
   purchaseSuggestion: p.SUGESTAO_COMPRA, // Suggested purchase qty
-  quantityToBuy: p.QTD_COMPRAR, // Qty recommended to buy
+  quantityToBuy: p.SUGESTAO_COMPRA, // Qty recommended to buy
   totalSales: p.VENDAS_TOTAL, // Total sales sum
   average6Months: p.MEDIA_6M,
 
