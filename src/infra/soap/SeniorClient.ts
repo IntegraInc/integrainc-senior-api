@@ -114,8 +114,8 @@ export class SeniorClient {
          <password>${password}</password>
          <encryption>${encryption}</encryption>
          <parameters>
-            <limit>${limit}</limit>
-            <page>${page}</page>
+            <limit>${limit || 9999}</limit>
+            <page>${page || 1}</page>
             <family>${family}</family>
          </parameters>
       </ser:exportaAnaliseReposicao>

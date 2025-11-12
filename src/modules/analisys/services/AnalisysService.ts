@@ -1,5 +1,6 @@
 import { parse } from "path";
 import { SeniorClient } from "../../../infra/soap/SeniorClient";
+import { getCache, setCache } from "../../../shared/utils/cache";
 import {
  mapAnalisysData,
  mapProductData,
@@ -22,6 +23,18 @@ export class AnalisysService {
   page: any,
   family?: any
  ) {
+  const cacheKey = `analysis:${user}:${limit}:${page}:${family}`;
+
+  // 1️⃣ Tenta pegar do cache
+  const cached = await getCache<any>(cacheKey);
+  if (cached) {
+   console.log("✅ Cache hit → analysis");
+   return cached;
+  }
+
+  console.log("🔄 Cache miss → consultando SOAP...");
+
+  // 2️⃣ Executa chamada SOAP
   const response = await this.seniorClient.exportAnalisys(
    user,
    password,
@@ -30,7 +43,6 @@ export class AnalisysService {
    page,
    family
   );
-
   const parsed = extractSoapFields<{ dados?: string; paginacao?: any }>(
    response,
    ["dados", "paginacao"]
@@ -67,6 +79,15 @@ export class AnalisysService {
    // 🧩 Mapeia campos pro formato frontend-friendly
    const mapped = mapAnalisysData(jsonData);
 
+   const cachePayload = {
+    success: true,
+    message: "Análise de reposição buscada com sucesso.",
+    pagination,
+    data: mapped,
+   };
+   // 3️⃣ Armazena no cache por 5 minutos (300 segundos)
+   await setCache(cacheKey, cachePayload, 300);
+
    return {
     success: true,
     message: "Análise de reposição buscada com sucesso.",
@@ -76,7 +97,7 @@ export class AnalisysService {
   } catch (error: any) {
    return {
     success: false,
-    message: "Erro ao processar análise de reposição.",
+    message: "Erro ao buscar lista de análise de reposição.",
     details: error.message,
    };
   }
