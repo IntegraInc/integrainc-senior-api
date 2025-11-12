@@ -18,20 +18,17 @@ export class AnalisysService {
   user: string,
   password: string,
   encryption: number,
-  limit: any = 999999,
-  page: any = 1
+  limit: any,
+  page: any,
+  family?: any
  ) {
-  const cacheKey = `analysis:${user}:${limit}:${page}`;
+  const cacheKey = `analysis:${user}:${limit}:${page}:${family}`;
 
   // 1️⃣ Tenta pegar do cache
   const cached = await getCache<any>(cacheKey);
   if (cached) {
    console.log("✅ Cache hit → analysis");
-   return {
-    success: true,
-    message: "Análise carregada do cache.",
-    data: cached,
-   };
+   return cached;
   }
 
   console.log("🔄 Cache miss → consultando SOAP...");
@@ -42,12 +39,13 @@ export class AnalisysService {
    password,
    encryption,
    limit,
-   page
+   page,
+   family
   );
-
-  const parsed = extractSoapFields<{ response?: string }>(response, [
-   "response",
-  ]);
+  const parsed = extractSoapFields<{ dados?: string; paginacao?: any }>(
+   response,
+   ["dados", "paginacao"]
+  );
 
   // 🧠 Case 1: SOAP execution failure
   if (parsed.error) {
@@ -58,7 +56,12 @@ export class AnalisysService {
    };
   }
 
-  const base64Data = parsed.data?.response;
+  const base64Data = parsed.data?.dados;
+  const pagination = {
+   totalItems: Number(parsed.data?.paginacao?.totalRegistros) || 0,
+   totalPages: Number(parsed.data?.paginacao?.totalPaginas) || 0,
+   currentPage: page,
+  };
 
   if (!base64Data) {
    return {
@@ -77,12 +80,19 @@ export class AnalisysService {
    // ✅ Translate field names
    const mapped = mapAnalisysData(jsonData);
 
+   const cachePayload = {
+    success: true,
+    message: "Análise de reposição buscada com sucesso.",
+    pagination,
+    data: mapped,
+   };
    // 3️⃣ Armazena no cache por 5 minutos (300 segundos)
-   await setCache(cacheKey, mapped, 300);
+   await setCache(cacheKey, cachePayload, 300);
 
    return {
     success: true,
     message: "Análise de reposição buscada com sucesso.",
+    pagination,
     data: mapped,
    };
   } catch (error: any) {

@@ -15,19 +15,28 @@ import { getSeniorCredentialsFromToken } from "../../../shared/utils/jwt";
  *     parameters:
  *       - name: page
  *         in: query
- *         description: Page number for pagination
+ *         required: false
+ *         description: Page number to retrieve
  *         schema:
  *           type: integer
  *           example: 1
  *       - name: limit
  *         in: query
+ *         required: false
  *         description: Number of products per page
  *         schema:
  *           type: integer
  *           example: 50
+ *       - name: family
+ *         in: query
+ *         required: true
+ *         description: Product family filter
+ *         schema:
+ *           type: string
+ *           example: "010"
  *     responses:
  *       200:
- *         description: Paginated list of products successfully retrieved
+ *         description: Analysis data fetched successfully
  *         content:
  *           application/json:
  *             schema:
@@ -36,15 +45,18 @@ import { getSeniorCredentialsFromToken } from "../../../shared/utils/jwt";
  *                 success:
  *                   type: boolean
  *                   example: true
- *                 total:
- *                   type: integer
- *                   example: 1245
- *                 page:
- *                   type: integer
- *                   example: 1
- *                 limit:
- *                   type: integer
- *                   example: 50
+ *                 message:
+ *                   type: string
+ *                   example: Análise de reposição buscada com sucesso.
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     totalItems:
+ *                       type: integer
+ *                       example: 16458
+ *                     totalPages:
+ *                       type: integer
+ *                       example: 1325
  *                 data:
  *                   type: array
  *                   items:
@@ -52,85 +64,68 @@ import { getSeniorCredentialsFromToken } from "../../../shared/utils/jwt";
  *                     properties:
  *                       productCode:
  *                         type: string
- *                         example: "12345"
+ *                         example: "0200458"
  *                       barcode:
- *                         type: string
- *                         example: "7891234567890"
+ *                         type: number
+ *                         example: 9786559883493
  *                       description:
  *                         type: string
- *                         example: "Chocolate Bar 90g"
- *                       origin:
+ *                         example: "Quinze Minutos Para o Pôr do Sol | Isabela Freixo"
+ *                       familyName:
  *                         type: string
- *                         example: "Nacional"
- *                       family:
+ *                         example: "MUNDO CRISTÃO"
+ *                       familyCode:
  *                         type: string
- *                         example: "Alimentos"
- *                       status:
+ *                         example: "020"
+ *                       lastPurchaseCost:
  *                         type: string
- *                         example: "A"
- *                       basePrice:
+ *                         example: "R$29,21"
+ *                       availableStock:
  *                         type: number
- *                         example: 5.49
- *                       lastCost:
+ *                         example: 13
+ *                       physicalStock:
  *                         type: number
- *                         example: 4.20
- *                       avgCost:
- *                         type: number
- *                         example: 4.35
- *                       discountCap:
- *                         type: number
- *                         example: 0.05
- *                       margin:
- *                         type: number
- *                         example: 0.25
- *                       markup:
- *                         type: number
- *                         example: 1.33
- *                       autoTargetMargin:
- *                         type: number
- *                         example: 0.3
- *                       autoTargetMarkup:
- *                         type: number
- *                         example: 1.4
- *                       stock:
- *                         type: number
- *                         example: 123
+ *                         example: 13
  *                       minStock:
  *                         type: number
- *                         example: 10
+ *                         example: 17
  *                       lastPurchaseDate:
  *                         type: string
- *                         format: date
- *                         example: "2025-09-15"
- *                       sales3Months:
+ *                         example: "25/09/2025"
+ *                       stockTurnover:
  *                         type: number
- *                         example: 420
- *                       weightedAverage:
+ *                         example: 9
+ *                       weightedAveragePrice:
+ *                         type: string
+ *                         example: "R$29,21"
+ *                       purchaseSuggestion:
  *                         type: number
- *                         example: 4.58
- *       400:
- *         description: Missing pagination parameters (page or limit)
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "You must provide page and limit"
- *       404:
- *         description: Products not found or error fetching from Senior
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "No products found."
- *                 details:
- *                   type: string
- *                   example: "Senior API did not return data"
+ *                         example: 10
+ *                       quantityToBuy:
+ *                         type: number
+ *                         example: 10
+ *                       totalSales:
+ *                         type: number
+ *                         example: 58
+ *                       average6Months:
+ *                         type: number
+ *                         example: 19.33
+ *                       monthlySales:
+ *                         type: array
+ *                         description: Historical monthly sales (last 6 months)
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             month:
+ *                               type: string
+ *                               example: "SEP/2025"
+ *                             total:
+ *                               type: number
+ *                               example: 22
+ *       401:
+ *         description: Missing or invalid authorization header
+ *       500:
+ *         description: Internal error or SOAP service failure
  */
 
 export class AnalisysController {
@@ -152,11 +147,11 @@ export class AnalisysController {
 
   const token = authHeader.split(" ")[1];
   const { username, password } = await getSeniorCredentialsFromToken(token);
-  const { page, limit } = req.query;
+  const { page, limit, family } = req.query;
 
-  // if (!page || !limit) {
-  //  return res.status(400).json({ error: "You must provide page and limit" });
-  // }
+  if (!family) {
+   return res.status(400).json({ error: "You must provide family code" });
+  }
 
   try {
    const result = await this.service.getAnalysis(
@@ -164,7 +159,8 @@ export class AnalisysController {
     password,
     0,
     limit,
-    page
+    page,
+    family
    );
    if (!result.success) {
     return res.status(404).json(result);

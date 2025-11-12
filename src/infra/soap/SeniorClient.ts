@@ -102,7 +102,8 @@ export class SeniorClient {
   password: string,
   encryption: number,
   limit: number,
-  page: number
+  page: number,
+  family?: string
  ) {
   const xmlBody = `
       <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://services.senior.com.br">
@@ -113,8 +114,9 @@ export class SeniorClient {
          <password>${password}</password>
          <encryption>${encryption}</encryption>
          <parameters>
-            <limit>${limit}</limit>
-            <page>${page}</page>
+            <limit>${limit || 9999}</limit>
+            <page>${page || 1}</page>
+            <family>${family}</family>
          </parameters>
       </ser:exportaAnaliseReposicao>
    </soapenv:Body>
