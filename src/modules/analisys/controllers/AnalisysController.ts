@@ -15,21 +15,21 @@ import { getSeniorCredentialsFromToken } from "../../../shared/utils/jwt";
  *     parameters:
  *       - name: page
  *         in: query
- *         required: true
+ *         required: false
  *         description: Page number to retrieve
  *         schema:
  *           type: integer
  *           example: 1
  *       - name: limit
  *         in: query
- *         required: true
+ *         required: false
  *         description: Number of products per page
  *         schema:
  *           type: integer
  *           example: 50
  *       - name: family
  *         in: query
- *         required: false
+ *         required: true
  *         description: Product family filter
  *         schema:
  *           type: string
@@ -149,8 +149,8 @@ export class AnalisysController {
   const { username, password } = await getSeniorCredentialsFromToken(token);
   const { page, limit, family } = req.query;
 
-  if (!page || !limit) {
-   return res.status(400).json({ error: "You must provide page and limit" });
+  if (!family) {
+   return res.status(400).json({ error: "You must provide family code" });
   }
 
   try {
