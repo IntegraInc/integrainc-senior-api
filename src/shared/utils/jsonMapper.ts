@@ -14,26 +14,28 @@ export function mapAnalisysData(products: any[]) {
   familyName: p.DESFAM,
   familyCode: p.CODFAM,
   // 🔹 Pricing information
-  lastPurchaseCost: p.PRECUS, // Last cost
+  lastPurchaseCost: p.PRECUS ? p.PRECUS : 0, // Last cost
   // 🔹 Inventory information
-  availableStock: p.ESTOQUE_DISPONIVEL, // Available (free) stock
-  physicalStock: p.ESTOQUE_FISICO, // Physical stock
+  availableStock: p.ESTOQUE_DISPONIVEL ? p.ESTOQUE_DISPONIVEL : 0, // Available (free) stock
+  physicalStock: p.ESTOQUE_FISICO ? p.ESTOQUE_FISICO : 0, // Physical stock
   minStock: p.ESTMIN, // Minimum stock (safety)
-  lastPurchaseDate: formatDate(p.DATA_ULTIMA_COMPRA), // Last purchase date
+  lastPurchaseDate: formatDate(p.DATA_ULTIMA_COMPRA)
+   ? formatDate(p.DATA_ULTIMA_COMPRA)
+   : " ", // Last purchase date
 
   // 🔹 Sales metrics
   //   salesLast3Months: p.QTDVEN3M, // Quantity sold in last 3 months
-  stockTurnover: p.GIRO_ESTOQUE, // Stock turnover rate
-  weightedAveragePrice: p.MEDIA_PONDERADA, // Weighted average price -inativado
-  purchaseSuggestion: p.SUGESTAO_COMPRA, // Suggested purchase qty
-  quantityToBuy: p.SUGESTAO_COMPRA, // Qty recommended to buy
-  totalSales: p.VENDAS_TOTAL, // Total sales sum
-  average6Months: p.MEDIA_6M,
+  stockTurnover: p.GIRO_ESTOQUE ? p.GIRO_ESTOQUE : 0, // Stock turnover rate
+  weightedAveragePrice: p.MEDIA_PONDERADA ? p.MEDIA_PONDERADA : 0, // Weighted average price -inativado
+  purchaseSuggestion: p.SUGESTAO_COMPRA ? p.SUGESTAO_COMPRA : 0, // Suggested purchase qty
+  quantityToBuy: p.SUGESTAO_COMPRA ? p.SUGESTAO_COMPRA : 0, // Qty recommended to buy
+  totalSales: p.VENDAS_TOTAL ? p.VENDAS_TOTAL : 0, // Total sales sum
+  average6Months: p.MEDIA_6M ? p.MEDIA_6M : 0, // Average sales over last 6 months
 
   // 🔹 Monthly sales (array of months and totals)
   monthlySales: p.VENDAS_MENSAL?.map((m: any) => ({
    month: m.MES,
-   total: m.TOTAL,
+   total: m.TOTAL ? m.TOTAL : 0,
   })),
 
   // 🔹 Average of last 6 months (already computed in SQL)
