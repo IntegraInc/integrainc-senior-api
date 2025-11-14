@@ -105,10 +105,27 @@ export class AnalisysService {
 
  async sendBuyingOrder(user: string, password: string, orderData: any) {
   try {
+   // 🔍 Filtra apenas produtos com quantidade > 0
+   const validProducts = orderData.products.filter(
+    (p: any) => p.orderQuantity > 0
+   );
+
+   // ⚠️ Se não houver produtos válidos, retorna erro
+   if (validProducts.length === 0) {
+    return {
+     success: false,
+     message: "Nenhum produto com quantidade válida para envio.",
+     details: "Todos os produtos possuem quantidade igual ou menor que zero.",
+    };
+   }
+
+   // 🧩 Atualiza o objeto orderData com os produtos filtrados
+   const filteredOrderData = { ...orderData, products: validProducts };
+
    const response = await this.seniorClient.gravarOrdensCompra(
     user,
     password,
-    orderData
+    filteredOrderData
    );
 
    const parsed = extractSoapFields<{ dadosRetorno?: any }>(response, [
