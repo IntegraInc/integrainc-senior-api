@@ -25,12 +25,14 @@ export function mapAnalisysData(products: any[]) {
 
   // 🔹 Sales metrics
   //   salesLast3Months: p.QTDVEN3M, // Quantity sold in last 3 months
-  stockTurnover: p.GIRO_ESTOQUE ? p.GIRO_ESTOQUE : 0, // Stock turnover rate
+  /*Formatar para milhar */
+  stockTurnover: p.GIRO_ESTOQUE ? p.GIRO_ESTOQUE.toLocaleString("pt-BR") : "0", // Stock turnover rate
   weightedAveragePrice: p.MEDIA_PONDERADA ? p.MEDIA_PONDERADA : 0, // Weighted average price -inativado
   purchaseSuggestion: p.SUGESTAO_COMPRA ? p.SUGESTAO_COMPRA : 0, // Suggested purchase qty
   quantityToBuy: p.SUGESTAO_COMPRA ? p.SUGESTAO_COMPRA : 0, // Qty recommended to buy
   totalSales: p.VENDAS_TOTAL ? p.VENDAS_TOTAL : 0, // Total sales sum
-  average6Months: p.MEDIA_6M ? p.MEDIA_6M : 0, // Average sales over last 6 months
+  /*Formatar para milhar*/
+  average6Months: p.MEDIA_6M ? p.MEDIA_6M.toLocaleString("pt-BR") : "0", // Average sales over last 6 months
 
   // 🔹 Monthly sales (array of months and totals)
   monthlySales: p.VENDAS_MENSAL?.map((m: any) => ({
