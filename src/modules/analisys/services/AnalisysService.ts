@@ -106,9 +106,14 @@ export class AnalisysService {
  async sendBuyingOrder(user: string, password: string, orderData: any) {
   try {
    // 🔍 Filtra apenas produtos com quantidade > 0
-   const validProducts = orderData.products.filter(
-    (p: any) => p.orderQuantity > 0
-   );
+   const validProducts = orderData.products
+    .filter((p: any) => p.orderQuantity > 0)
+    .map((p: any) => ({
+     ...p,
+     // 💰 Corrige preço unitário: se for 0, null ou undefined, define como 1.00
+     unityPrice:
+      !p.unityPrice || Number(p.unityPrice) <= 0 ? 0.01 : Number(p.unityPrice),
+    }));
 
    // ⚠️ Se não houver produtos válidos, retorna erro
    if (validProducts.length === 0) {
@@ -141,6 +146,13 @@ export class AnalisysService {
    }
 
    const orderNumber = parsed.data?.dadosRetorno?.numOcp;
+
+   if (orderNumber === "0") {
+    return {
+     success: false,
+     message: "Problemas ao gerar a ordem de compra.",
+    };
+   }
 
    return {
     success: true,
