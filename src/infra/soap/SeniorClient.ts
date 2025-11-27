@@ -251,7 +251,7 @@ export class SeniorClient {
               <codFor>${params.supplyerCode}</codFor>
               ${produtosXml}
             </dadosGerais>
-            <fechaOC>N</fechaOC>
+            <fechaOC>S</fechaOC>
             <tipoProcessamento>1</tipoProcessamento>
             <identificadorSistema>IIP</identificadorSistema>
           </parameters>
