@@ -273,7 +273,7 @@ export class AnalisysController {
     req.body
    );
 
-   return res.status(result.success ? 200 : 500).json(result);
+   return res.status(result.success ? 200 : 400).json(result);
   } catch (error: any) {
    console.error("❌ Buying order controller error:", error.message);
    return res.status(500).json({

@@ -133,9 +133,12 @@ export class AnalisysService {
     filteredOrderData
    );
 
+   console.log("Dado enviado ", filteredOrderData);
+
    const parsed = extractSoapFields<{ dadosRetorno?: any }>(response, [
     "dadosRetorno",
    ]);
+   console.log("resposta do Senior", parsed);
 
    if (parsed.error) {
     return {
@@ -151,6 +154,7 @@ export class AnalisysService {
     return {
      success: false,
      message: "Problemas ao gerar a ordem de compra.",
+     details: parsed.data?.dadosRetorno?.retorno,
     };
    }
 

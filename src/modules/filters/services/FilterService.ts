@@ -21,7 +21,7 @@ export class FilterService {
   */
  async getFilters(user: string, password: string, encryption: number = 0) {
   const cacheKey = `senior:filters`;
-  const ttlSeconds = 3600; // 1 hora
+  const ttlSeconds = 60; // 1 hora
 
   try {
    // 1️⃣ Tenta pegar do cache
