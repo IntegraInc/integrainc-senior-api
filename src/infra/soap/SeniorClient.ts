@@ -1,6 +1,7 @@
 import axios from "axios";
 import { parseStringPromise } from "xml2js";
 import { soapConfig } from "../../config/soap.config";
+import iconv from "iconv-lite";
 import "dotenv/config";
 
 export class SeniorClient {
@@ -269,10 +270,16 @@ export class SeniorClient {
       SOAPAction: this.url + this.buyingOrderModule,
      },
      timeout: soapConfig.timeout,
+     responseType: "arraybuffer",
+     transformResponse: (r) => r,
     }
    );
 
-   const parsed = await parseStringPromise(data, { explicitArray: false });
+   // 👇 Decodifica os bytes corretamente
+
+   const parsed = await parseStringPromise(data, {
+    explicitArray: false,
+   });
    return parsed;
   } catch (error: any) {
    console.error("❌ Senior SOAP order error:", error.message);
