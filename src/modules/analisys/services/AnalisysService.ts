@@ -15,6 +15,93 @@ export class AnalisysService {
   this.seniorClient = new SeniorClient();
  }
 
+ //  async getAnalysis(
+ //   user: string,
+ //   password: string,
+ //   encryption: number,
+ //   limit: any,
+ //   page: any,
+ //   family?: any
+ //  ) {
+ //   const cacheKey = `analysis:${user}:${limit}:${page}:${family}`;
+
+ //   // 1️⃣ Tenta pegar do cache
+ //   const cached = await getCache<any>(cacheKey);
+ //   if (cached) {
+ //    console.log("✅ Cache hit → analysis");
+ //    return cached;
+ //   }
+
+ //   console.log("🔄 Cache miss → consultando SOAP...");
+
+ //   // 2️⃣ Executa chamada SOAP
+ //   const response = await this.seniorClient.exportAnalisys(
+ //    user,
+ //    password,
+ //    encryption,
+ //    limit,
+ //    page,
+ //    family
+ //   );
+ //   const parsed = extractSoapFields<{ dados?: string; paginacao?: any }>(
+ //    response,
+ //    ["dados", "paginacao"]
+ //   );
+
+ //   // 🧠 Caso de erro no SOAP
+ //   if (parsed.error) {
+ //    return {
+ //     success: false,
+ //     message: parsed.message,
+ //     details: parsed.details,
+ //    };
+ //   }
+
+ //   const base64Data = parsed.data?.dados;
+ //   const pagination = {
+ //    totalItems: Number(parsed.data?.paginacao?.totalRegistros) || 0,
+ //    totalPages: Number(parsed.data?.paginacao?.totalPaginas) || 0,
+ //    currentPage: page,
+ //   };
+
+ //   if (!base64Data) {
+ //    return {
+ //     success: false,
+ //     message: "Nenhum dado Base64 encontrado na resposta SOAP.",
+ //    };
+ //   }
+
+ //   try {
+ //    // 🔍 Decode Base64 → string JSON
+ //    const decoded = Buffer.from(base64Data, "base64").toString("latin1");
+ //    const jsonData = JSON.parse(decoded);
+
+ //    // 🧩 Mapeia campos pro formato frontend-friendly
+ //    const mapped = mapAnalisysData(jsonData);
+
+ //    const cachePayload = {
+ //     success: true,
+ //     message: "Análise de reposição buscada com sucesso.",
+ //     pagination,
+ //     data: mapped,
+ //    };
+ //    // 3️⃣ Armazena no cache por 5 minutos (300 segundos)
+ //    await setCache(cacheKey, cachePayload, 300);
+
+ //    return {
+ //     success: true,
+ //     message: "Análise de reposição buscada com sucesso.",
+ //     pagination,
+ //     data: mapped,
+ //    };
+ //   } catch (error: any) {
+ //    return {
+ //     success: false,
+ //     message: "Erro ao buscar lista de análise de reposição.",
+ //     details: error.message,
+ //    };
+ //   }
+ //  }
  async getAnalysis(
   user: string,
   password: string,
@@ -23,12 +110,20 @@ export class AnalisysService {
   page: any,
   family?: any
  ) {
-  const cacheKey = `analysis:${user}:${limit}:${page}:${family}`;
+  const familyKey = family ?? "all";
+  const cacheKey = `analysis:${user}:${limit}:${page}:${familyKey}`;
 
   // 1️⃣ Tenta pegar do cache
   const cached = await getCache<any>(cacheKey);
-  if (cached) {
-   console.log("✅ Cache hit → analysis");
+  if (
+   cached &&
+   typeof cached === "object" &&
+   "data" in cached &&
+   Array.isArray(cached.data)
+  ) {
+   console.log(
+    `✅ Cache hit → analysis (${cached.data.length} itens na página ${page})`
+   );
    return cached;
   }
 
@@ -43,6 +138,7 @@ export class AnalisysService {
    page,
    family
   );
+
   const parsed = extractSoapFields<{ dados?: string; paginacao?: any }>(
    response,
    ["dados", "paginacao"]
@@ -73,11 +169,18 @@ export class AnalisysService {
 
   try {
    // 🔍 Decode Base64 → string JSON
-   const decoded = Buffer.from(base64Data, "base64").toString("latin1");
+   let decoded: string;
+   decoded = Buffer.from(base64Data, "base64").toString("latin1");
+
    const jsonData = JSON.parse(decoded);
 
    // 🧩 Mapeia campos pro formato frontend-friendly
    const mapped = mapAnalisysData(jsonData);
+
+   // 🚫 Se veio vazio, não cacheia
+   const hasItems = Array.isArray(mapped)
+    ? mapped.length > 0
+    : !!mapped && Object.keys(mapped).length > 0;
 
    const cachePayload = {
     success: true,
@@ -85,15 +188,19 @@ export class AnalisysService {
     pagination,
     data: mapped,
    };
-   // 3️⃣ Armazena no cache por 5 minutos (300 segundos)
-   await setCache(cacheKey, cachePayload, 300);
 
-   return {
-    success: true,
-    message: "Análise de reposição buscada com sucesso.",
-    pagination,
-    data: mapped,
-   };
+   if (hasItems) {
+    await setCache(cacheKey, cachePayload, 300);
+    console.log(
+     `🔒 Cache set → ${cacheKey} (${
+      Array.isArray(mapped) ? mapped.length : "n/a"
+     } itens)`
+    );
+   } else {
+    console.warn(`⚠️ Nenhum item retornado. Cache não gravado (${cacheKey}).`);
+   }
+
+   return cachePayload;
   } catch (error: any) {
    return {
     success: false,
