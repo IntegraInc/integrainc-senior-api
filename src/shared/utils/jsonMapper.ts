@@ -54,17 +54,22 @@ export function mapProductData(products: any[]) {
   category: p.DESMAR,
 
   // 🔹 Pricing information
-  lastPurchaseCost: p.PRECUS, // Custo de aquisição (último custo)
-  avgCost: p.PRECAP, // Custo médio / ajustado
-  discountPercent: p.PERCAP, // Percentual de desconto aplicado
-  markupPercent: p.MARKUP, // Markup configurado
-  marginPercent: p.MARGEM_PERCENTUAL, // Margem real calculada
-  suggestedPriceByMargin: p.PRECO_SUGERIDO_MARGEM, // Preço sugerido baseado na margem real
-  suggestedPriceByMarkup: p.PRECO_SUGERIDO_MARKUP, // Preço sugerido baseado no markup
+  lastPurchaseCost: p.PRECUS ? p.PRECUS : 0, // Custo de aquisição (último custo)
+  capPrice: p.PRECAP > 0 ? p.PRECAP : 0, // Custo médio / ajustado
+  capPercent: p.PERCAP > 0 ? p.PERCAP : 0, // Percentual de desconto aplicado
+  salePrice: p.PREBAS ? p.PREBAS : 0, // Preço de venda atual
+  markupPercent: p.MARKUP > 0 ? p.MARKUP : 0, // Markup configurado
+  marginPercent: p.MARGEM_PERCENTUAL > 0 ? p.MARGEM_PERCENTUAL : 0, // Margem real calculada
+  suggestedPriceByMargin:
+   p.PRECO_SUGERIDO_MARGEM > 0 ? p.PRECO_SUGERIDO_MARGEM : 0, // Preço sugerido baseado na margem real
+  suggestedPriceByMarkup:
+   p.PRECO_SUGERIDO_MARKUP > 0 ? p.PRECO_SUGERIDO_MARKUP : 0, // Preço sugerido baseado no markup
 
   // 🔹 Inventory information
-  availableStock: p.ESTOQUE_DISPONIVEL, // Estoque disponível
-  lastPurchaseDate: p.DATA_ULTIMA_COMPRA, // Última data de compra
+  availableStock: p.ESTOQUE_DISPONIVEL > 0 ? p.ESTOQUE_DISPONIVEL : 0, // Estoque disponível
+  lastPurchaseDate: formatDate(p.DATA_ULTIMA_COMPRA)
+   ? formatDate(p.DATA_ULTIMA_COMPRA)
+   : " ", // Last purchase date
 
   // 🔹 Metadata / derived info (optional placeholders)
   // physicalStock: p.ESTOQUE_FISICO,       // se vier depois, manter estrutura

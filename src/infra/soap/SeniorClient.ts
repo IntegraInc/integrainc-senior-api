@@ -55,11 +55,13 @@ export class SeniorClient {
  async exportTablePrice(
   user: string,
   password: string,
-  encryption: number,
   limit: number,
   page: number,
-  tablePrice: string
+  tablePrice: string,
+  markup: number,
+  margin: number
  ) {
+  const encryption = 0;
   const xmlBody = `
       <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://services.senior.com.br">
    <soapenv:Header/>
@@ -69,9 +71,11 @@ export class SeniorClient {
          <password>${password}</password>
          <encryption>${encryption}</encryption>
          <parameters>
-            <limit>${limit}</limit>
-            <page>${page}</page>
+            <limit>${limit || 9999}</limit>
+            <page>${page || 1} </page>
             <codtpr>${tablePrice}</codtpr>
+            <permargem>${margin}</permargem>
+            <permarkup>${markup}</permarkup>
          </parameters>
       </ser:exportaTabelaPrecos>
    </soapenv:Body>
@@ -284,6 +288,64 @@ export class SeniorClient {
   } catch (error: any) {
    console.error("❌ Senior SOAP order error:", error.message);
    throw new Error("Failed to send buying order to Senior SOAP service.");
+  }
+ }
+ async changePrice(user: any, password: any, tablePrice: any, products: any) {
+  const encryption = 0;
+
+  const produtosXml = products
+   .map(
+    (p: any) => `
+      <produtos>
+        <codPro>${p.productCode}</codPro>
+        <prebas>${p.salePrice}</prebas>
+        <precap>${p.capPrice}</precap>
+      </produtos>`
+   )
+   .join("");
+
+  const xmlBody = `
+    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://services.senior.com.br">
+      <soapenv:Body>
+        <ser:alteraPreco>
+          <user>${user}</user>
+          <password>${password}</password>
+          <encryption>${encryption}</encryption>
+          <parameters>
+          <codtpr>${tablePrice}</codtpr>
+            <produtos>
+              ${produtosXml}
+            </produtos>
+          </parameters>
+        </ser:alteraPreco>
+      </soapenv:Body>
+    </soapenv:Envelope>
+  `;
+
+  try {
+   const { data } = await axios.post(
+    `${this.url + this.productModule}`,
+    xmlBody,
+    {
+     headers: {
+      "Content-Type": "text/xml;charset=UTF-8",
+      SOAPAction: this.url + this.productModule,
+     },
+     timeout: soapConfig.timeout,
+     responseType: "arraybuffer",
+     transformResponse: (r) => r,
+    }
+   );
+
+   // 👇 Decodifica os bytes corretamente
+
+   const parsed = await parseStringPromise(data, {
+    explicitArray: false,
+   });
+   return parsed;
+  } catch (error: any) {
+   console.error("❌ Senior SOAP change price error:", error.message);
+   throw new Error("Failed to change price into Senior SOAP service.");
   }
  }
 }

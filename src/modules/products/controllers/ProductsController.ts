@@ -6,137 +6,218 @@ import { getSeniorCredentialsFromToken } from "../../../shared/utils/jwt";
  * @openapi
  * /products/all:
  *   get:
- *     summary: Get paginated products with cost, margin, and pricing analysis
- *     security:
- *       - bearerAuth: []   # JWT authentication required
- *     description: |
- *       Retrieves a paginated list of products from the Senior ERP, including cost details,
- *       markup/margin analysis, and suggested prices based on current cost and markup rules.
- *       Returns data already mapped into frontend-friendly JSON fields.
+ *     summary: Lista produtos com análise de custo, margem e preços sugeridos
+ *     description: >
+ *       Retorna uma lista paginada de produtos já mapeados para o front, incluindo:
+ *       custo da última compra, preço de venda, percentuais de markup e margem, e
+ *       preços sugeridos com base nos parâmetros informados.
  *     tags:
  *       - Products
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - name: page
  *         in: query
  *         required: true
- *         description: Page number for pagination
+ *         description: "Número da página (0-based)."
  *         schema:
  *           type: integer
- *           example: 1
+ *           minimum: 0
+ *           example: 0
  *       - name: limit
  *         in: query
  *         required: true
- *         description: Number of products per page
+ *         description: "Quantidade de itens por página."
  *         schema:
  *           type: integer
+ *           minimum: 1
  *           example: 50
  *       - name: tablePrice
  *         in: query
  *         required: true
- *         description: Price table code (e.g., TPM)
+ *         description: "Código da tabela de preços (ex.: TPW, TPM)."
  *         schema:
  *           type: string
- *           example: "TPM"
+ *           example: "TPW"
+ *       - name: markup
+ *         in: query
+ *         required: false
+ *         description: "Percentual de markup para cálculo de preço sugerido (ex.: 10 = 10%)."
+ *         schema:
+ *           type: number
+ *           format: float
+ *           example: 10
+ *       - name: margin
+ *         in: query
+ *         required: false
+ *         description: "Percentual de margem para cálculo de preço sugerido (ex.: 10 = 10%)."
+ *         schema:
+ *           type: number
+ *           format: float
+ *           example: 10
  *     responses:
  *       200:
- *         description: Paginated product list successfully retrieved
+ *         description: "Lista de produtos retornada com sucesso."
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 total:
- *                   type: integer
- *                   example: 1280
- *                 page:
- *                   type: integer
- *                   example: 1
- *                 limit:
- *                   type: integer
- *                   example: 50
- *                 data:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       productCode:
- *                         type: string
- *                         example: "0100002"
- *                       barcode:
- *                         type: string
- *                         example: "7898521815981"
- *                       description:
- *                         type: string
- *                         example: "Bíblia de Estudo | Letra Normal | Capa Couro Vinho"
- *                       familyName:
- *                         type: string
- *                         example: "SBB"
- *                       familyCode:
- *                         type: string
- *                         example: "0001"
- *                       category:
- *                         type: string
- *                         example: "Livros"
- *                       lastPurchaseCost:
- *                         type: number
- *                         example: 120.50
- *                       avgCost:
- *                         type: number
- *                         example: 122.35
- *                       discountPercent:
- *                         type: number
- *                         example: 0.05
- *                       markupPercent:
- *                         type: number
- *                         example: 0.45
- *                       marginPercent:
- *                         type: number
- *                         example: 28.57
- *                       suggestedPriceByMargin:
- *                         type: number
- *                         example: 169.00
- *                       suggestedPriceByMarkup:
- *                         type: number
- *                         example: 174.73
- *                       availableStock:
- *                         type: number
- *                         example: 42
- *                       lastPurchaseDate:
- *                         type: string
- *                         format: date
- *                         example: "2025-09-25"
+ *               $ref: '#/components/schemas/ProductsResponse'
+ *             examples:
+ *               default:
+ *                 summary: Exemplo de resposta
+ *                 value:
+ *                   success: true
+ *                   message: "Produtos buscados com sucesso."
+ *                   data:
+ *                     - productCode: "0100002"
+ *                       barcode: "7898521815981"
+ *                       description: "Bíblia de Estudo do Expositor | Letra Normal | NTVE | Capa Couro Vinho"
+ *                       familyName: "SBB"
+ *                       familyCode: "010"
+ *                       category: "LIVROS"
+ *                       lastPurchaseCost: "R$137,56"
+ *                       capPrice: 0
+ *                       capPercent: 35
+ *                       salePrice: 227.435
+ *                       markupPercent: 65.34
+ *                       marginPercent: 39.52
+ *                       suggestedPriceByMargin: 137.46
+ *                       suggestedPriceByMarkup: 137.66
+ *                       availableStock: 8
+ *                       lastPurchaseDate: "19/11/2025"
  *       400:
- *         description: Missing required query parameters (page, limit, codTpr)
+ *         description: "Parâmetros ausentes ou inválidos."
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: false
- *                 error:
- *                   type: string
- *                   example: "You must provide page, limit and codTpr"
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             examples:
+ *               missingTablePrice:
+ *                 summary: Falta tablePrice
+ *                 value:
+ *                   success: false
+ *                   message: "You must provide table price"
+ *       401:
+ *         description: "Falha de autenticação (Bearer token ausente ou inválido)."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             examples:
+ *               noAuth:
+ *                 value:
+ *                   success: false
+ *                   message: "Missing or invalid Authorization header."
  *       404:
- *         description: Products not found or error fetching data from Senior
+ *         description: "Produtos não encontrados ou erro na consulta ao ERP."
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: false
- *                 error:
- *                   type: string
- *                   example: "No products found."
- *                 details:
- *                   type: string
- *                   example: "Senior ERP did not return data"
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             examples:
+ *               notFound:
+ *                 value:
+ *                   success: false
+ *                   message: "No products found."
+ *                   details: "Senior ERP did not return data"
+ *       500:
+ *         description: "Erro interno inesperado."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *
+ * components:
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ *   schemas:
+ *     ProductItem:
+ *       type: object
+ *       properties:
+ *         productCode:
+ *           type: string
+ *           example: "0100002"
+ *         barcode:
+ *           type: string
+ *           description: "Pode ser grande; retornar como string evita perda de precisão."
+ *           example: "7898521815981"
+ *         description:
+ *           type: string
+ *           example: "Bíblia de Estudo do Expositor | Letra Normal | NTVE | Capa Couro Vinho"
+ *         familyName:
+ *           type: string
+ *           example: "SBB"
+ *         familyCode:
+ *           type: string
+ *           example: "010"
+ *         category:
+ *           type: string
+ *           example: "LIVROS"
+ *         lastPurchaseCost:
+ *           type: string
+ *           description: "Valor formatado em moeda (pt-BR)."
+ *           example: "R$137,56"
+ *         capPrice:
+ *           type: number
+ *           format: float
+ *           example: 0
+ *         capPercent:
+ *           type: number
+ *           format: float
+ *           example: 35
+ *         salePrice:
+ *           type: number
+ *           format: float
+ *           example: 227.435
+ *         markupPercent:
+ *           type: number
+ *           format: float
+ *           example: 65.34
+ *         marginPercent:
+ *           type: number
+ *           format: float
+ *           example: 39.52
+ *         suggestedPriceByMargin:
+ *           type: number
+ *           format: float
+ *           example: 137.46
+ *         suggestedPriceByMarkup:
+ *           type: number
+ *           format: float
+ *           example: 137.66
+ *         availableStock:
+ *           type: integer
+ *           example: 8
+ *         lastPurchaseDate:
+ *           type: string
+ *           description: "Data no formato dd/MM/yyyy."
+ *           example: "19/11/2025"
+ *     ProductsResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         message:
+ *           type: string
+ *           example: "Produtos buscados com sucesso."
+ *         data:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/ProductItem'
+ *     ErrorResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: false
+ *         message:
+ *           type: string
+ *         details:
+ *           type: string
  */
 
 export class ProductsController {
@@ -158,20 +239,21 @@ export class ProductsController {
 
   const token = authHeader.split(" ")[1];
   const { username, password } = await getSeniorCredentialsFromToken(token);
-  const { page, limit, tablePrice } = req.query;
+  const { page, limit, tablePrice, markup, margin } = req.query;
 
-  if (!page || !limit || !tablePrice) {
-   return res.status(400).json({ error: "You must provide page and limit" });
+  if (!tablePrice) {
+   return res.status(400).json({ error: "You must provide table price" });
   }
 
   try {
    const result = await this.service.getProducts(
     username,
     password,
-    0,
     limit,
     page,
-    tablePrice as string
+    tablePrice as string,
+    markup,
+    margin
    );
    if (!result.success) {
     return res.status(404).json(result);
@@ -189,82 +271,186 @@ export class ProductsController {
   * @openapi
   * /products/change-price:
   *   post:
-  *     summary: Send a Buying Order (Ordem de Compra) to Senior ERP
-  *     description: Creates a new buying order in Senior ERP using the SOAP service `GravarOrdensCompra_8`.
-  *     security:
-  *      - bearerAuth: []
+  *     summary: Atualiza preços em uma tabela de preços
+  *     description: "Recebe produtos do frontend, escolhe o preço conforme `typePrice` e envia para o serviço da Senior (incluindo `capPrice`)."
   *     tags:
   *       - Products
+  *     security:
+  *       - bearerAuth: []
   *     requestBody:
   *       required: true
   *       content:
   *         application/json:
   *           schema:
-  *             type: object
-  *             required:
-  *               - paymentCondition
-  *               - company
-  *               - branch
-  *               - supplyerCode
-  *               - products
-  *             properties:
-  *               paymentCondition:
-  *                 type: string
-  *                 description: Payment condition code
-  *                 example: "001"
-  *               company:
-  *                 type: integer
-  *                 description: Company code (COD_EMP)
-  *                 example: 1
-  *               branch:
-  *                 type: integer
-  *                 description: Branch code (COD_FIL)
-  *                 example: 1
-  *               supplyerCode:
-  *                 type: integer
-  *                 description: Supplier code (COD_FOR)
-  *                 example: 25
-  *               products:
-  *                 type: array
-  *                 description: List of products included in the purchase order
-  *                 items:
-  *                   type: object
-  *                   required:
-  *                     - productCode
-  *                     - orderQuantity
-  *                     - unityPrice
-  *                   properties:
-  *                     productCode:
-  *                       type: string
-  *                       description: Product code
-  *                       example: "0100032"
-  *                     orderQuantity:
-  *                       type: number
-  *                       description: Quantity requested
-  *                       example: 10
-  *                     unityPrice:
-  *                       type: number
-  *                       description: Unit price for the product
-  *                       example: 59.9
+  *             $ref: '#/components/schemas/ChangePriceRequest'
+  *           examples:
+  *             margem:
+  *               summary: Exemplo usando typePrice = margem
+  *               value:
+  *                 tablePrice: "TPW"
+  *                 typePrice: "margem"
+  *                 products:
+  *                   - productCode: "0100002"
+  *                     salePrice: 227.43
+  *                     suggestedPriceByMargin: 137.46
+  *                     suggestedPriceByMarkup: 137.66
+  *                     capPrice: 100
+  *             markup:
+  *               summary: Exemplo usando typePrice = markup
+  *               value:
+  *                 tablePrice: "TPM"
+  *                 typePrice: "markup"
+  *                 products:
+  *                   - productCode: "0000000001"
+  *                     salePrice: 120.5
+  *                     suggestedPriceByMargin: 118.0
+  *                     suggestedPriceByMarkup: 125.0
+  *                     capPrice: 90
+  *             price:
+  *               summary: Exemplo usando typePrice = price (usa salePrice do front)
+  *               value:
+  *                 tablePrice: "TPM"
+  *                 typePrice: "price"
+  *                 products:
+  *                   - productCode: "0000000002"
+  *                     salePrice: 220.75
+  *                     suggestedPriceByMargin: 235.0
+  *                     suggestedPriceByMarkup: 240.0
+  *                     capPrice: 0
   *     responses:
   *       200:
-  *         description: Buying order sent successfully
+  *         description: "Preços enviados/atualizados com sucesso."
   *         content:
   *           application/json:
   *             schema:
-  *               type: object
-  *               properties:
-  *                 success:
-  *                   type: boolean
-  *                 message:
-  *                   type: string
-  *                 data:
-  *                   type: object
+  *               $ref: '#/components/schemas/ChangePriceResponse'
+  *             examples:
+  *               ok:
+  *                 value:
+  *                   success: true
+  *                   message: "Alterações de preço enviadas com sucesso."
+  *                   data:
+  *                     response: "OK"
+  *       400:
+  *         description: "Parâmetros ausentes ou corpo inválido."
+  *         content:
+  *           application/json:
+  *             schema:
+  *               $ref: '#/components/schemas/ErrorResponse'
+  *             examples:
+  *               badRequest:
+  *                 value:
+  *                   success: false
+  *                   message: "tablePrice e products são obrigatórios."
   *       401:
-  *         description: Missing or invalid authorization header
+  *         description: "Falha de autenticação."
+  *         content:
+  *           application/json:
+  *             schema:
+  *               $ref: '#/components/schemas/ErrorResponse'
+  *             examples:
+  *               noAuth:
+  *                 value:
+  *                   success: false
+  *                   message: "Missing or invalid Authorization header."
+  *       404:
+  *         description: "Erro na integração ou recurso não encontrado."
+  *         content:
+  *           application/json:
+  *             schema:
+  *               $ref: '#/components/schemas/ErrorResponse'
+  *             examples:
+  *               notFound:
+  *                 value:
+  *                   success: false
+  *                   message: "Senior ERP did not return data"
   *       500:
-  *         description: Internal error or SOAP failure
+  *         description: "Erro interno inesperado."
+  *         content:
+  *           application/json:
+  *             schema:
+  *               $ref: '#/components/schemas/ErrorResponse'
+  *
+  * components:
+  *   securitySchemes:
+  *     bearerAuth:
+  *       type: http
+  *       scheme: bearer
+  *       bearerFormat: JWT
+  *   schemas:
+  *     ChangePriceProduct:
+  *       type: object
+  *       required: [productCode, salePrice, suggestedPriceByMargin, suggestedPriceByMarkup, capPrice]
+  *       properties:
+  *         productCode:
+  *           type: string
+  *           example: "0100002"
+  *         salePrice:
+  *           type: number
+  *           format: float
+  *           description: "Preço de venda informado pelo front; usado quando typePrice = 'price'."
+  *           example: 227.43
+  *         suggestedPriceByMargin:
+  *           type: number
+  *           format: float
+  *           description: "Preço sugerido pela margem; usado quando typePrice = 'margem'."
+  *           example: 137.46
+  *         suggestedPriceByMarkup:
+  *           type: number
+  *           format: float
+  *           description: "Preço sugerido pelo markup; usado quando typePrice = 'markup'."
+  *           example: 137.66
+  *         capPrice:
+  *           type: number
+  *           format: float
+  *           description: "Preço de capa enviado pelo front; sempre encaminhado ao ERP."
+  *           example: 100
+  *     ChangePriceRequest:
+  *       type: object
+  *       required: [tablePrice, typePrice, products]
+  *       properties:
+  *         tablePrice:
+  *           type: string
+  *           description: "Código da tabela de preços (ex.: TPW, TPM)."
+  *           example: "TPW"
+  *         typePrice:
+  *           type: string
+  *           description: "Define qual preço aplicar no envio ao ERP."
+  *           enum: ["price", "margem", "markup"]
+  *           example: "margem"
+  *         products:
+  *           type: array
+  *           minItems: 1
+  *           items:
+  *             $ref: '#/components/schemas/ChangePriceProduct'
+  *     ChangePriceResponse:
+  *       type: object
+  *       properties:
+  *         success:
+  *           type: boolean
+  *           example: true
+  *         message:
+  *           type: string
+  *           example: "Alterações de preço enviadas com sucesso."
+  *         data:
+  *           type: object
+  *           description: "Conteúdo retornado pela operação SOAP da Senior."
+  *           properties:
+  *             response:
+  *               type: string
+  *               example: "OK"
+  *     ErrorResponse:
+  *       type: object
+  *       properties:
+  *         success:
+  *           type: boolean
+  *           example: false
+  *         message:
+  *           type: string
+  *         details:
+  *           type: string
   */
+
  async changePrice(req: Request, res: Response) {
   try {
    const authHeader = req.headers.authorization;
@@ -278,11 +464,7 @@ export class ProductsController {
    const token = authHeader.split(" ")[1];
    const { username, password } = await getSeniorCredentialsFromToken(token);
 
-   const result = await this.service.sendBuyingOrder(
-    username,
-    password,
-    req.body
-   );
+   const result = await this.service.changePrice(username, password, req.body);
 
    return res.status(result.success ? 200 : 500).json(result);
   } catch (error: any) {
