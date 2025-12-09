@@ -51,7 +51,6 @@ export class SeniorClient {
    throw new Error("Failed to authenticate with Senior SOAP service.");
   }
  }
-
  async exportTablePrice(
   user: string,
   password: string,
@@ -148,7 +147,6 @@ export class SeniorClient {
    throw new Error("Failed to authenticate with Senior SOAP service.");
   }
  }
-
  async getFilters(user: string, password: string, encryption: number) {
   const xmlBody = `
     <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://services.senior.com.br">
@@ -297,13 +295,12 @@ export class SeniorClient {
    .map(
     (p: any) => `
       <produtos>
-        <codPro>${p.productCode}</codPro>
+        <codigo>${p.productCode}</codigo>
         <prebas>${p.salePrice}</prebas>
         <precap>${p.capPrice}</precap>
       </produtos>`
    )
    .join("");
-
   const xmlBody = `
     <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://services.senior.com.br">
       <soapenv:Body>
@@ -313,9 +310,7 @@ export class SeniorClient {
           <encryption>${encryption}</encryption>
           <parameters>
           <codtpr>${tablePrice}</codtpr>
-            <produtos>
               ${produtosXml}
-            </produtos>
           </parameters>
         </ser:alteraPreco>
       </soapenv:Body>

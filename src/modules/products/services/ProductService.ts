@@ -68,7 +68,6 @@ export class ProductService {
     message: "No Base64 data found in SOAP response.",
    };
   }
-
   try {
    // 🔍 Decode Base64 → string
    const decoded = Buffer.from(base64Data, "base64").toString("latin1");
@@ -99,7 +98,6 @@ export class ProductService {
    } else {
     console.warn(`⚠️ Nenhum item retornado. Cache não gravado (${cacheKey}).`);
    }
-
    return cachePayload;
   } catch (error: any) {
    return {
@@ -151,13 +149,11 @@ export class ProductService {
      }));
      break;
    }
-
    // 🧩 Monta objeto final para o serviço SOAP
    const payload = {
     tablePrice: priceData.tablePrice,
     products: mappedProducts,
    };
-
    // 🚀 Envia para o serviço SOAP da Senior
    const response = await this.seniorClient.changePrice(
     user,
@@ -165,8 +161,7 @@ export class ProductService {
     payload.tablePrice,
     payload.products
    );
-
-   const parsed = extractSoapFields<{ response?: string }>(response, [
+   const parsed = extractSoapFields<{ response?: any }>(response, [
     "response",
    ]);
 
@@ -177,7 +172,6 @@ export class ProductService {
      details: parsed.details,
     };
    }
-
    return {
     success: true,
     message: "Preços atualizados com sucesso.",
