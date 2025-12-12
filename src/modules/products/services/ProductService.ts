@@ -48,7 +48,6 @@ export class ProductService {
    markup ?? 0,
    margin ?? 0
   );
-
   const parsed = extractSoapFields<{ response?: any }>(response, ["response"]);
 
   // 🧠 Case 1: SOAP execution failure
@@ -62,10 +61,13 @@ export class ProductService {
 
   const base64Data = parsed.data?.response;
 
-  if (!base64Data) {
+  // ✅ Case 2: veio nil do SOAP (xml2js)
+  const isNil = base64Data?.$?.["xsi:nil"] === "true";
+  if (isNil || base64Data == null) {
    return {
     success: false,
-    message: "No Base64 data found in SOAP response.",
+    message: "Resposta veio vazia (xsi:nil=true).",
+    details: "O campo <response> foi retornado como nulo pelo SOAP.",
    };
   }
   try {
@@ -85,7 +87,7 @@ export class ProductService {
 
    const cachePayload = {
     success: true,
-    message: "Producos buscados com sucesso.",
+    message: "Produtos buscados com sucesso.",
     data: mapped,
    };
    if (hasItems) {
