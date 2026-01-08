@@ -187,4 +187,72 @@ export class ProductService {
    };
   }
  }
+
+ async importPrice(user: string, password: string, priceData: any) {
+  try {
+   /**
+    * Exemplo esperado:
+    * {
+    *   tablePrice: "TPM",
+    *   typePrice: "margem" | "markup" | "price",
+    *   products: [
+    *     { productCode: "0000000001", salePrice: 120, suggestedPriceByMargin: 135, suggestedPriceByMarkup: 140 }
+    *   ]
+    * }
+    */
+
+   // 🔁 Monta os produtos conforme o tipo selecionado
+   let mappedProducts = priceData.products.map((p: any) => ({
+    productCode: p.productCode,
+    salePrice: p.salePrice,
+    capPrice: p.capPrice ?? 0,
+   }));
+
+   // 🧩 Monta objeto final para o serviço SOAP
+   const payload = {
+    tablePrice: priceData.tablePrice,
+    products: mappedProducts,
+   };
+   // 🚀 Envia para o serviço SOAP da Senior
+   const response = await this.seniorClient.importPrice(
+    user,
+    password,
+    payload.tablePrice,
+    payload.products
+   );
+
+   const parsed = extractSoapFields<{ response?: any }>(response, [
+    "response",
+   ]);
+   if (parsed.error) {
+    return {
+     success: false,
+     message: parsed.message,
+     details: parsed.details,
+    };
+   }
+   const base64Data = parsed.data?.response;
+   if (!base64Data) {
+    return {
+     success: false,
+     message: "Nenhum dado Base64 encontrado na resposta SOAP.",
+    };
+   }
+   let decoded: string;
+   decoded = Buffer.from(base64Data, "base64").toString("latin1");
+   const jsonData = JSON.parse(decoded);
+   const mapped = mapProductData(jsonData);
+   return {
+    success: true,
+    message: "Preços atualizados com sucesso.",
+    data: mapped,
+   };
+  } catch (error: any) {
+   return {
+    success: false,
+    message: "Erro ao enviar atualização de preços.",
+    details: error.message,
+   };
+  }
+ }
 }

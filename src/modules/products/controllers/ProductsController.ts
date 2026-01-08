@@ -476,4 +476,129 @@ export class ProductsController {
    });
   }
  }
+ /**
+  * @openapi
+  * /products/import-price:
+  *   post:
+  *     summary: Importa preços para uma Tabela de Preço e retorna os itens alterados
+  *     description: >
+  *       Recebe uma lista de produtos com SKU, Preço de Venda e Preço Capa para uma
+  *       Tabela de Preço específica. O serviço atualiza os preços no Senior e retorna,
+  *       no campo "data", apenas os itens efetivamente alterados já no formato completo da tabela.
+  *     tags:
+  *       - Products
+  *     security:
+  *       - bearerAuth: []
+  *     requestBody:
+  *       required: true
+  *       content:
+  *         application/json:
+  *           schema:
+  *             type: object
+  *             required:
+  *               - tablePrice
+  *               - products
+  *             properties:
+  *               tablePrice:
+  *                 type: string
+  *                 example: "TII"
+  *               products:
+  *                 type: array
+  *                 items:
+  *                   type: object
+  *                   required:
+  *                     - productCode
+  *                     - salePrice
+  *                     - capPrice
+  *                   properties:
+  *                     productCode:
+  *                       type: string
+  *                       example: "9040000"
+  *                     salePrice:
+  *                       type: number
+  *                       example: 5
+  *                     capPrice:
+  *                       type: number
+  *                       example: 20
+  *     responses:
+  *       '200':
+  *         description: Sucesso — itens atualizados retornados no campo "data".
+  *         content:
+  *           application/json:
+  *             schema:
+  *               type: object
+  *               properties:
+  *                 success:
+  *                   type: boolean
+  *                   example: true
+  *                 message:
+  *                   type: string
+  *                   example: "Preços atualizados com sucesso."
+  *                 data:
+  *                   type: array
+  *                   items:
+  *                     type: object
+  *                     properties:
+  *                       productCode: { type: string, example: "0100002" }
+  *                       barcode: { type: number, example: 7898521815981 }
+  *                       description: { type: string, example: "Bíblia de Estudo do Expositor | NTVE | Capa Couro Vinho" }
+  *                       familyName: { type: string, example: "SBB" }
+  *                       familyCode: { type: string, example: "010" }
+  *                       category: { type: string, example: "LIVROS" }
+  *                       lastPurchaseCost: { type: number, example: 137.56 }
+  *                       capPrice: { type: number, example: 100 }
+  *                       capPercent: { type: number, example: 37.56 }
+  *                       salePrice: { type: number, example: 227.43 }
+  *                       markupPercent: { type: number, example: 65.33 }
+  *                       marginPercent: { type: number, example: 39.52 }
+  *                       suggestedPriceByMargin: { type: number, example: 0 }
+  *                       suggestedPriceByMarkup: { type: number, example: 0 }
+  *                       availableStock: { type: number, example: 1 }
+  *                       lastPurchaseDate: { type: string, example: "30/12/2025" }
+  *       '401':
+  *         description: "Header de autorização ausente ou inválido (Authorization: Bearer <token>)."
+  *         content:
+  *           application/json:
+  *             schema:
+  *               type: object
+  *               properties:
+  *                 success: { type: boolean, example: false }
+  *                 message: { type: string, example: "Missing or invalid Authorization header." }
+  *       '500':
+  *         description: Erro interno ao processar/reenviar para o Senior.
+  *         content:
+  *           application/json:
+  *             schema:
+  *               type: object
+  *               properties:
+  *                 success: { type: boolean, example: false }
+  *                 message: { type: string, example: "Error sending file to Senior." }
+  *                 details: { type: string, example: "mensagem de erro detalhada" }
+  */
+
+ async importPrice(req: Request, res: Response) {
+  try {
+   const authHeader = req.headers.authorization;
+   if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({
+     success: false,
+     message: "Missing or invalid Authorization header.",
+    });
+   }
+
+   const token = authHeader.split(" ")[1];
+   const { username, password } = await getSeniorCredentialsFromToken(token);
+
+   const result = await this.service.importPrice(username, password, req.body);
+
+   return res.status(result.success ? 200 : 500).json(result);
+  } catch (error: any) {
+   console.error("❌ import file controller error:", error.message);
+   return res.status(500).json({
+    success: false,
+    message: "Error sending file to Senior.",
+    details: error.message,
+   });
+  }
+ }
 }

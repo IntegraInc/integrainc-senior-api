@@ -343,4 +343,59 @@ export class SeniorClient {
    throw new Error("Failed to change price into Senior SOAP service.");
   }
  }
+ async importPrice(user: any, password: any, tablePrice: any, products: any) {
+  const encryption = 0;
+
+  const produtosXml = products
+   .map(
+    (p: any) => `
+      <produtos>
+        <codigo>${p.productCode}</codigo>
+        <prebas>${p.salePrice}</prebas>
+        <precap>${p.capPrice}</precap>
+      </produtos>`
+   )
+   .join("");
+  const xmlBody = `
+    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://services.senior.com.br">
+      <soapenv:Body>
+        <ser:importaPreco>
+          <user>${user}</user>
+          <password>${password}</password>
+          <encryption>${encryption}</encryption>
+          <parameters>
+          <codtpr>${tablePrice}</codtpr>
+              ${produtosXml}
+          </parameters>
+        </ser:importaPreco>
+      </soapenv:Body>
+    </soapenv:Envelope>
+  `;
+
+  try {
+   const { data } = await axios.post(
+    `${this.url + this.productModule}`,
+    xmlBody,
+    {
+     headers: {
+      "Content-Type": "text/xml;charset=UTF-8",
+      SOAPAction: this.url + this.productModule,
+     },
+     timeout: soapConfig.timeout,
+     responseType: "arraybuffer",
+     transformResponse: (r) => r,
+    }
+   );
+
+   // 👇 Decodifica os bytes corretamente
+
+   const parsed = await parseStringPromise(data, {
+    explicitArray: false,
+   });
+   return parsed;
+  } catch (error: any) {
+   console.error("❌ Senior SOAP change price error:", error.message);
+   throw new Error("Failed to change price into Senior SOAP service.");
+  }
+ }
 }
