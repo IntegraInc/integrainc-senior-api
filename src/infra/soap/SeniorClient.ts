@@ -58,7 +58,8 @@ export class SeniorClient {
   page: number,
   tablePrice: string,
   markup: number,
-  margin: number
+  margin: number,
+  family: string
  ) {
   const encryption = 0;
   const xmlBody = `
@@ -73,6 +74,7 @@ export class SeniorClient {
             <limit>${limit || 9999}</limit>
             <page>${page || 1} </page>
             <codtpr>${tablePrice}</codtpr>
+            <codfam>${family}</codfam>
             <permargem>${margin}</permargem>
             <permarkup>${markup}</permarkup>
          </parameters>

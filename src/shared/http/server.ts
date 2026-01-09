@@ -15,7 +15,7 @@ app.use(express.json({ limit: "100mb" }));
 setupSwagger(app);
 app.use(routes);
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
 const appName = process.env.APP_NAME || "integrainc-senior-api";
 
 app.listen(port, () => {

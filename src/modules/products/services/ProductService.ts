@@ -18,12 +18,13 @@ export class ProductService {
   page: any,
   tablePrice: string,
   markup: any,
-  margin: any
+  margin: any,
+  family: any
  ) {
   const tablePriceKey = tablePrice;
-  const cacheKey = `products:${user}:${tablePriceKey}:${limit ?? 9999}:${
-   page ?? 1
-  }:${markup ?? 0}:${margin ?? 0}`;
+  const cacheKey = `products:${user}:${tablePriceKey}:${family}:${
+   limit ?? 9999
+  }:${page ?? 1}:${markup ?? 0}:${margin ?? 0}`;
   const cached = await getCache<any>(cacheKey);
   if (
    cached &&
@@ -46,7 +47,8 @@ export class ProductService {
    page ?? 1,
    tablePrice,
    markup ?? 0,
-   margin ?? 0
+   margin ?? 0,
+   family ?? ""
   );
   const parsed = extractSoapFields<{ response?: any }>(response, ["response"]);
 

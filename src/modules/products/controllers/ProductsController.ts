@@ -239,7 +239,7 @@ export class ProductsController {
 
   const token = authHeader.split(" ")[1];
   const { username, password } = await getSeniorCredentialsFromToken(token);
-  const { page, limit, tablePrice, markup, margin } = req.query;
+  const { page, limit, tablePrice, markup, margin, family } = req.query;
 
   if (!tablePrice) {
    return res.status(400).json({ error: "You must provide table price" });
@@ -253,7 +253,8 @@ export class ProductsController {
     page,
     tablePrice as string,
     markup,
-    margin
+    margin,
+    family
    );
    if (!result.success) {
     return res.status(404).json(result);
