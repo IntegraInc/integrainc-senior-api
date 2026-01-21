@@ -53,3 +53,40 @@ export function extractSoapFields<T = Record<string, any>>(
   data: result as T,
  };
 }
+export function isSoapNil(v: any) {
+ return (
+  v &&
+  typeof v === "object" &&
+  v.$ &&
+  (v.$["xsi:nil"] === "true" ||
+   v.$["xsi:nil"] === true ||
+   v.$["nil"] === "true" ||
+   v.$["nil"] === true)
+ );
+}
+
+export function deepNormalizeSoap(obj: any): any {
+ if (obj === null || obj === undefined) return "";
+
+ if (isSoapNil(obj)) return "";
+
+ if (Array.isArray(obj)) {
+  if (obj.length === 0) return "";
+  return deepNormalizeSoap(obj[0]);
+ }
+
+ if (typeof obj === "object") {
+  // caso clássico do xml2js: { _: "valor", $: {...} }
+  if ("_" in obj && Object.keys(obj).every((k) => k === "_" || k === "$")) {
+   return deepNormalizeSoap((obj as any)._);
+  }
+
+  const out: any = {};
+  for (const [k, v] of Object.entries(obj)) {
+   out[k] = deepNormalizeSoap(v);
+  }
+  return out;
+ }
+
+ return obj;
+}

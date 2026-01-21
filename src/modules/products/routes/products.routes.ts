@@ -12,5 +12,8 @@ productsRoutes.post("/change-price", (req, res) =>
 productsRoutes.post("/import-price", (req, res) =>
  controller.importPrice(req, res)
 );
+productsRoutes.get("/export-price", (req, res) =>
+ controller.exportPrice(req, res)
+);
 
 export default productsRoutes;

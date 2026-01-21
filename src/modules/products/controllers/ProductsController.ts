@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { ProductService } from "../services/ProductService";
 import { getSeniorCredentialsFromToken } from "../../../shared/utils/jwt";
+import { Parser } from "json2csv";
 
 /**
  * @openapi
@@ -598,6 +599,148 @@ export class ProductsController {
    return res.status(500).json({
     success: false,
     message: "Error sending file to Senior.",
+    details: error.message,
+   });
+  }
+ }
+
+ /**
+  * @openapi
+  * /products/export-price:
+  *   get:
+  *     summary: Exporta preços de uma Tabela de Preço em CSV
+  *     description: >
+  *       Retorna um arquivo CSV (download) contendo os produtos e preços da Tabela de Preço informada.
+  *       Pode filtrar opcionalmente por família. A resposta NÃO é JSON — é um arquivo CSV com
+  *       Content-Type "text/csv" e Content-Disposition "attachment".
+  *     tags:
+  *       - Products
+  *     security:
+  *       - bearerAuth: []
+  *     parameters:
+  *       - name: tablePrice
+  *         in: query
+  *         required: true
+  *         description: Código da Tabela de Preço a ser exportada.
+  *         schema:
+  *           type: string
+  *         example: "TII"
+  *       - name: family
+  *         in: query
+  *         required: false
+  *         description: Código da família para filtrar os produtos (opcional).
+  *         schema:
+  *           type: string
+  *         example: "904"
+  *     responses:
+  *       '200':
+  *         description: Sucesso — retorna um arquivo CSV para download.
+  *         headers:
+  *           Content-Type:
+  *             description: Tipo do conteúdo retornado.
+  *             schema:
+  *               type: string
+  *             example: "text/csv; charset=utf-8"
+  *           Content-Disposition:
+  *             description: Força download do arquivo CSV e define o nome.
+  *             schema:
+  *               type: string
+  *             example: 'attachment; filename="export-precos.csv"'
+  *         content:
+  *           text/csv:
+  *             schema:
+  *               type: string
+  *             example: |
+  *               codpro,codbar,despro,desfam,codfam,ultimo_custo,estoque_disponivel,ultima_compra,categoria,preco_capa,porcentagem_capa,preco_venda,porcentagem_margem,porcentagem_markup
+  *               9040000,7898521815981,"Produto Exemplo","SBB","904",137.56,10,"30/12/2025","LIVROS",100,37.56,227.43,39.52,65.33
+  *       '400':
+  *         description: Requisição inválida — parâmetro obrigatório ausente.
+  *         content:
+  *           application/json:
+  *             schema:
+  *               type: object
+  *               properties:
+  *                 error:
+  *                   type: string
+  *                   example: "You must provide table price"
+  *       '401':
+  *         description: "Header de autorização ausente ou inválido (Authorization: Bearer <token>)."
+  *         content:
+  *           application/json:
+  *             schema:
+  *               type: object
+  *               properties:
+  *                 success: { type: boolean, example: false }
+  *                 message: { type: string, example: "Missing or invalid Authorization header." }
+  *       '500':
+  *         description: Erro interno ao exportar/enviar o arquivo do Senior.
+  *         content:
+  *           application/json:
+  *             schema:
+  *               type: object
+  *               properties:
+  *                 success: { type: boolean, example: false }
+  *                 message: { type: string, example: "Error export file from Senior." }
+  *                 details: { type: string, example: "mensagem de erro detalhada" }
+  */
+
+ async exportPrice(req: Request, res: Response) {
+  try {
+   const authHeader = req.headers.authorization;
+   if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({
+     success: false,
+     message: "Missing or invalid Authorization header.",
+    });
+   }
+
+   const token = authHeader.split(" ")[1];
+   const { username, password } = await getSeniorCredentialsFromToken(token);
+
+   const { family, tablePrice } = req.query;
+
+   if (tablePrice == undefined) {
+    return res.status(400).json({ error: "You must provide table price" });
+   }
+
+   const result = await this.service.exportPrice(
+    username,
+    password,
+    tablePrice,
+    family
+   );
+   const fields = [
+    "codpro",
+    "codbar",
+    "despro",
+    "desfam",
+    "codfam",
+    "ultimo_custo",
+    "estoque_disponivel",
+    "ultima_compra",
+    "categoria",
+    "preco_capa",
+    "porcentagem_capa",
+    "preco_venda",
+    "porcentagem_margem",
+    "porcentagem_markup",
+   ];
+   const json2csvParser = new Parser({ fields });
+   const csv = json2csvParser.parse(result.data as any);
+
+   res.setHeader("Content-Type", "text/csv; charset=utf-8");
+   res.setHeader(
+    "Content-Disposition",
+    'attachment; filename="export-precos.csv"'
+   );
+   return res.status(200).send(csv);
+
+   return res.status(200).send(csv);
+  } catch (error: any) {
+   console.error("❌ export file controller error:", error.message);
+   return res.status(500).json({
+    success: false,
+    message: "Error export file from  Senior.",
     details: error.message,
    });
   }

@@ -400,4 +400,48 @@ export class SeniorClient {
    throw new Error("Failed to change price into Senior SOAP service.");
   }
  }
+ async exportExcelTablePrice(
+  user: string,
+  password: string,
+  tablePrice: string,
+  family: string
+ ) {
+  const encryption = 0;
+  const xmlBody = `
+      <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://services.senior.com.br">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <ser:exportaExcelTabelaPrecos>
+         <user>${user}</user>
+         <password>${password}</password>
+         <encryption>${encryption}</encryption>
+         <parameters>
+            <tabela>${tablePrice}</tabela>
+            <familia>${family}</familia>
+         </parameters>
+      </ser:exportaExcelTabelaPrecos>
+   </soapenv:Body>
+</soapenv:Envelope>
+    `;
+
+  try {
+   const { data } = await axios.post(
+    `${this.url + this.productModule}`,
+    xmlBody,
+    {
+     headers: {
+      "Content-Type": "text/xml;charset=UTF-8",
+      SOAPAction: this.url + this.productModule,
+     },
+     timeout: soapConfig.timeout,
+    }
+   );
+
+   const parsed = await parseStringPromise(data, { explicitArray: false });
+   return parsed;
+  } catch (error: any) {
+   console.error("❌ Senior SOAP authentication error:", error.message);
+   throw new Error("Failed to authenticate with Senior SOAP service.");
+  }
+ }
 }

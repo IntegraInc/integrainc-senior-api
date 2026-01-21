@@ -2,7 +2,10 @@ import { SeniorClient } from "../../../infra/soap/SeniorClient";
 import { getCache, setCache } from "../../../shared/utils/cache";
 import { mapProductData } from "../../../shared/utils/jsonMapper";
 import { getSeniorCredentialsFromToken } from "../../../shared/utils/jwt";
-import { extractSoapFields } from "../../../shared/utils/soapParser";
+import {
+ deepNormalizeSoap,
+ extractSoapFields,
+} from "../../../shared/utils/soapParser";
 
 export class ProductService {
  private seniorClient: SeniorClient;
@@ -253,6 +256,52 @@ export class ProductService {
    return {
     success: false,
     message: "Erro ao enviar atualização de preços.",
+    details: error.message,
+   };
+  }
+ }
+ async exportPrice(
+  user: string,
+  password: string,
+  tablePrice: any,
+  family: any
+ ) {
+  try {
+   const response = await this.seniorClient.exportExcelTablePrice(
+    user,
+    password,
+    tablePrice,
+    family ?? ""
+   );
+
+   const parsed = extractSoapFields<{ produtos?: any }>(response, [
+    "produtos",
+   ]);
+   if (parsed.error) {
+    return {
+     success: false,
+     message: parsed.message,
+     details: parsed.details,
+    };
+   }
+   const products = Array.isArray(parsed.data?.produtos)
+    ? parsed.data?.produtos.map(deepNormalizeSoap)
+    : [];
+   if (!products) {
+    return {
+     success: false,
+     message: "Nenhum produto encontrato com os parametros informados.",
+    };
+   }
+   return {
+    success: true,
+    message: "Preços exportados com sucesso.",
+    data: products,
+   };
+  } catch (error: any) {
+   return {
+    success: false,
+    message: "Erro ao exportar preços.",
     details: error.message,
    };
   }
