@@ -56,7 +56,8 @@ export function mapProductData(products: any[]) {
   // 🔹 Pricing information
   lastPurchaseCost: p.PRECUS ? p.PRECUS : 0, // Custo de aquisição (último custo)
   capPrice: p.PRECAP > 0 ? p.PRECAP : 0, // Custo médio / ajustado
-  capPercent: p.PERCAP > 0 ? p.PERCAP : 0, // Percentual de desconto aplicado
+  venCapPercent: p.PERCAP > 0 ? p.PERCAP : 0, // Percentual de desconto aplicado
+  publisherPercentDiscount: p.DESCONTO_EDITORA > 0 ? p.DESCONTO_EDITORA : 0, // Percentual de desconto aplicado
   salePrice: p.PREBAS ? p.PREBAS : 0, // Preço de venda atual
   markupPercent: p.MARKUP > 0 ? p.MARKUP : 0, // Markup configurado
   marginPercent: p.MARGEM_PERCENTUAL > 0 ? p.MARGEM_PERCENTUAL : 0, // Margem real calculada

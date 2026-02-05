@@ -56,6 +56,13 @@ import { Parser } from "json2csv";
  *           type: number
  *           format: float
  *           example: 10
+ *       - name: family
+ *         in: query
+ *         required: true
+ *         description: "Código da família do produto (ex.: 010, 020)."
+ *         schema:
+ *           type: string
+ *           example: "010"
  *     responses:
  *       200:
  *         description: "Lista de produtos retornada com sucesso."
