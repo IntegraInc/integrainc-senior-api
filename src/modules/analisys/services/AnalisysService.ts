@@ -347,4 +347,59 @@ export class AnalisysService {
    };
   }
  }
+
+ async sendBuyingOrder_2(user: string, password: string, orderData: any) {
+  try {
+   // 🔍 Filtra apenas produtos com quantidade > 0
+   const validProducts = orderData.products
+    .filter((p: any) => p.orderQuantity > 0)
+    .map((p: any) => ({
+     ...p,
+     // 💰 Corrige preço unitário: se for 0, null ou undefined, define como 1.00
+     unityPrice:
+      !p.unityPrice || Number(p.unityPrice) <= 0 ? 0.01 : Number(p.unityPrice),
+    }));
+
+   // ⚠️ Se não houver produtos válidos, retorna erro
+   if (validProducts.length === 0) {
+    return {
+     success: false,
+     message: "Nenhum produto com quantidade válida para envio.",
+     details: "Todos os produtos possuem quantidade igual ou menor que zero.",
+    };
+   }
+
+   // 🧩 Atualiza o objeto orderData com os produtos filtrados
+   const filteredOrderData = { ...orderData, products: validProducts };
+
+   const response = await this.seniorClient.gravarOrdensCompra_2(
+    user,
+    password,
+    filteredOrderData
+   );
+
+   const soap = SoapResult.from(response);
+
+   const resposta = soap.array<any>("resposta");
+   if (!resposta.ok) {
+    return {
+     success: false,
+     message: resposta.message,
+     details: resposta.details,
+    };
+   }
+
+   return {
+    success: true,
+    message: "Ordem de compra adicionada na fila de processamento.",
+    data: resposta.value[0],
+   };
+  } catch (error: any) {
+   return {
+    success: false,
+    message: "Erro ao enviar ordem de compra.",
+    details: error.message,
+   };
+  }
+ }
 }

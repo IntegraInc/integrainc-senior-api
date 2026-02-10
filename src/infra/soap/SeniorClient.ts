@@ -487,4 +487,68 @@ export class SeniorClient {
    throw new Error("Failed to authenticate with Senior SOAP service.");
   }
  }
+ async gravarOrdensCompra_2(user: any, password: any, params: any) {
+  const encryption = 0;
+
+  const produtosXml = params.products
+   .map(
+    (p: any) => `
+      <produtos>
+        <codPro>${p.productCode}</codPro>
+        <qtdPed>${p.orderQuantity}</qtdPed>
+        <preUni>${p.unityPrice}</preUni>
+      </produtos>`
+   )
+   .join("");
+
+  const xmlBody = `
+    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://services.senior.com.br">
+      <soapenv:Body>
+        <ser:gravaOrdemDeCompra>
+          <user>${user}</user>
+          <password>${password}</password>
+          <encryption>${encryption}</encryption>
+          <parameters>
+            <dadosGerais>
+              <codCpg>${params.paymentCondition}</codCpg>
+              <codEmp>${params.company}</codEmp>
+              <codFil>${params.branch}</codFil>
+              <codFor>${params.supplyerCode}</codFor>
+              ${produtosXml}
+            </dadosGerais>
+            <fechaOC>1</fechaOC>
+            <tipoProcessamento>1</tipoProcessamento>
+            <identificadorSistema>IIP</identificadorSistema>
+          </parameters>
+        </ser:gravaOrdemDeCompra>
+      </soapenv:Body>
+    </soapenv:Envelope>
+  `;
+
+  try {
+   const { data } = await axios.post(
+    `${this.url + this.productModule}`,
+    xmlBody,
+    {
+     headers: {
+      "Content-Type": "text/xml;charset=UTF-8",
+      SOAPAction: this.url + this.productModule,
+     },
+     timeout: soapConfig.timeout,
+     responseType: "arraybuffer",
+     transformResponse: (r) => r,
+    }
+   );
+   // 👇 Decodifica os bytes corretamente
+
+   const parsed = await parseStringPromise(data, {
+    explicitArray: false,
+   });
+
+   return parsed;
+  } catch (error: any) {
+   console.error("❌ Senior SOAP order error:", error.message);
+   throw new Error("Failed to send buying order to Senior SOAP service.");
+  }
+ }
 }

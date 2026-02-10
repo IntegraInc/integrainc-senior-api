@@ -10,5 +10,7 @@ analisysRoutes.get("/all-2", (req, res) => controller.getAnalisys_2(req, res));
 analisysRoutes.post("/buying-order", (req, res) =>
  controller.postBuyingOrder(req, res)
 );
-
+analisysRoutes.post("/buying-order-2", (req, res) =>
+ controller.postBuyingOrder_2(req, res)
+);
 export default analisysRoutes;
