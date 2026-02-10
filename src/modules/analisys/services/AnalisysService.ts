@@ -329,7 +329,6 @@ export class AnalisysService {
      details: produtos.details,
     };
    }
-   console.log(produtos.value);
    const mapped = mapAnalisysData2(produtos.value);
    //  const mapped = produtos.value;
 
