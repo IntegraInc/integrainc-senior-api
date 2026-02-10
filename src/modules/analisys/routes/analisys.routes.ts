@@ -6,6 +6,7 @@ const controller = new AnalisysController();
 
 // Test endpoint
 analisysRoutes.get("/all", (req, res) => controller.getAnalisys(req, res));
+analisysRoutes.get("/all-2", (req, res) => controller.getAnalisys_2(req, res));
 analisysRoutes.post("/buying-order", (req, res) =>
  controller.postBuyingOrder(req, res)
 );

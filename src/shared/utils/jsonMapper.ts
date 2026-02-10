@@ -43,6 +43,40 @@ export function mapAnalisysData(products: any[]) {
   // 🔹 Average of last 6 months (already computed in SQL)
  }));
 }
+export function mapAnalisysData2(products: any[]) {
+ return products.map((p) => ({
+  // 🔹 Basic product information
+  productCode: p.codpro,
+  barcode: p.codbar,
+  description: p.despro,
+  familyName: p.desfam,
+  familyCode: p.codfam,
+  // 🔹 Pricing information
+  lastPurchaseCost: p.precus ? p.precus : 0, // Last cost
+  // 🔹 Inventory information
+  availableStock: p.ESTOQUE_DISPONIVEL ? Number(p.ESTOQUE_DISPONIVEL) : 0, // Available (free) stock
+  physicalStock: p.ESTOQUE_FISICO ? Number(p.ESTOQUE_FISICO) : 0, // Physical stock
+  minStock: p.ESTMIN, // Minimum stock (safety)
+  lastPurchaseDate: formatDate(p.DATA_ULTIMA_COMPRA)
+   ? formatDate(p.DATA_ULTIMA_COMPRA)
+   : " ",
+  stockTurnover: p.GIRO_ESTOQUE ? p.GIRO_ESTOQUE.toLocaleString("pt-BR") : "0",
+  weightedAveragePrice: p.MEDIA_PONDERADA ? Number(p.MEDIA_PONDERADA) : 0, // Weighted average price -inativado // p.MEDIA_PONDERADA ? p.MEDIA_PONDERADA : 0,
+  purchaseSuggestion: p.SUGESTAO_COMPRA ? Number(p.SUGESTAO_COMPRA) : 0, // Suggested purchase qty // p.SUGESTAO_COMPRA ? p.SUGESTAO_COMPRA : 0,
+  quantityToBuy: p.SUGESTAO_COMPRA ? Number(p.SUGESTAO_COMPRA) : 0, // Qty recommended to buy // p.SUGESTAO_COMPRA ? p.SUGESTAO_COMPRA : 0,
+  totalSales: p.VENDAS_TOTAL ? Number(p.VENDAS_TOTAL) : 0, // Total sales sum // p.VENDAS_TOTAL ? p.VENDAS_TOTAL : 0,
+  /*Formatar para milhar*/
+  average6Months: p.MEDIA_6M ? p.MEDIA_6M.toLocaleString("pt-BR") : "0", // Average sales over last 6 months
+
+  // 🔹 Monthly sales (array of months and totals)
+  monthlySales: p.vendas_mensal_json?.map((m: any) => ({
+   month: m.mes,
+   total: m.total ? Number(m.total) : 0,
+  })),
+
+  // 🔹 Average of last 6 months (already computed in SQL)
+ }));
+}
 export function mapProductData(products: any[]) {
  return products.map((p) => ({
   // 🔹 Basic product information

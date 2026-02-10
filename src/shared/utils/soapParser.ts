@@ -70,9 +70,9 @@ export function deepNormalizeSoap(obj: any): any {
 
  if (isSoapNil(obj)) return "";
 
+ // ✅ preserva arrays (não pega só o [0])
  if (Array.isArray(obj)) {
-  if (obj.length === 0) return "";
-  return deepNormalizeSoap(obj[0]);
+  return obj.map(deepNormalizeSoap);
  }
 
  if (typeof obj === "object") {

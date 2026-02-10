@@ -3,10 +3,15 @@ import { SeniorClient } from "../../../infra/soap/SeniorClient";
 import { getCache, setCache } from "../../../shared/utils/cache";
 import {
  mapAnalisysData,
+ mapAnalisysData2,
  mapProductData,
 } from "../../../shared/utils/jsonMapper";
 import { getSeniorCredentialsFromToken } from "../../../shared/utils/jwt";
-import { extractSoapFields } from "../../../shared/utils/soapParser";
+import {
+ deepNormalizeSoap,
+ extractSoapFields,
+} from "../../../shared/utils/soapParser";
+import { SoapResult } from "../../../shared/utils/soapResult";
 
 export class AnalisysService {
  private seniorClient: SeniorClient;
@@ -274,6 +279,71 @@ export class AnalisysService {
    return {
     success: false,
     message: "Erro ao enviar ordem de compra.",
+    details: error.message,
+   };
+  }
+ }
+
+ async getAnalysis_3(
+  user: string,
+  password: string,
+  encryption: number,
+  limit: any,
+  page: any,
+  family?: any
+ ) {
+  try {
+   const familyKey = family ?? "all";
+
+   // 1️⃣ Tenta pegar do cache
+   //  const cached = await getCache<any>(cacheKey);
+   //  if (
+   //   cached &&
+   //   typeof cached === "object" &&
+   //   "data" in cached &&
+   //   Array.isArray(cached.data)
+   //  ) {
+   //   console.log(
+   //    `✅ Cache hit → analysis (${cached.data.length} itens na página ${page})`
+   //   );
+   //   return cached;
+   //  }
+
+   //  console.log("🔄 Cache miss → consultando SOAP...");
+
+   // 2️⃣ Executa chamada SOAP
+   const response = await this.seniorClient.exportAnalisys_3(
+    user,
+    password,
+    encryption,
+    family
+   );
+
+   const soap = SoapResult.from(response);
+
+   const produtos = soap.array<any>("produtos");
+   if (!produtos.ok) {
+    return {
+     success: false,
+     message: produtos.message,
+     details: produtos.details,
+    };
+   }
+   console.log(produtos.value);
+   const mapped = mapAnalisysData2(produtos.value);
+   //  const mapped = produtos.value;
+
+   const cachePayload = {
+    success: true,
+    message: "Análise de reposição buscada com sucesso.",
+    data: mapped,
+   };
+
+   return cachePayload;
+  } catch (error: any) {
+   return {
+    success: false,
+    message: "Erro ao buscar lista de análise de reposição.",
     details: error.message,
    };
   }
