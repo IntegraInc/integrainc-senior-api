@@ -57,9 +57,7 @@ export function mapAnalisysData2(products: any[]) {
   availableStock: p.ESTOQUE_DISPONIVEL ? Number(p.ESTOQUE_DISPONIVEL) : 0, // Available (free) stock
   physicalStock: p.ESTOQUE_FISICO ? Number(p.ESTOQUE_FISICO) : 0, // Physical stock
   minStock: p.ESTMIN, // Minimum stock (safety)
-  lastPurchaseDate: formatDate(p.DATA_ULTIMA_COMPRA)
-   ? formatDate(p.DATA_ULTIMA_COMPRA)
-   : " ",
+  lastPurchaseDate: p.DATA_ULTIMA_COMPRA ? p.DATA_ULTIMA_COMPRA : " ",
   stockTurnover: p.GIRO_ESTOQUE ? p.GIRO_ESTOQUE.toLocaleString("pt-BR") : "0",
   weightedAveragePrice: p.MEDIA_PONDERADA ? Number(p.MEDIA_PONDERADA) : 0, // Weighted average price -inativado // p.MEDIA_PONDERADA ? p.MEDIA_PONDERADA : 0,
   purchaseSuggestion: p.SUGESTAO_COMPRA ? Number(p.SUGESTAO_COMPRA) : 0, // Suggested purchase qty // p.SUGESTAO_COMPRA ? p.SUGESTAO_COMPRA : 0,
