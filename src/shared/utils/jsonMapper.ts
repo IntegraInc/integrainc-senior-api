@@ -61,7 +61,7 @@ export function mapAnalisysData2(products: any[]) {
   stockTurnover: p.GIRO_ESTOQUE ? p.GIRO_ESTOQUE.toLocaleString("pt-BR") : "0",
   weightedAveragePrice: p.MEDIA_PONDERADA ? Number(p.MEDIA_PONDERADA) : 0, // Weighted average price -inativado // p.MEDIA_PONDERADA ? p.MEDIA_PONDERADA : 0,
   purchaseSuggestion: p.SUGESTAO_COMPRA ? Number(p.SUGESTAO_COMPRA) : 0, // Suggested purchase qty // p.SUGESTAO_COMPRA ? p.SUGESTAO_COMPRA : 0,
-  quantityToBuy: p.SUGESTAO_COMPRA ? Number(p.SUGESTAO_COMPRA) : 0, // Qty recommended to buy // p.SUGESTAO_COMPRA ? p.SUGESTAO_COMPRA : 0,
+  quantityToBuy: 0, // Qty recommended to buy // p.SUGESTAO_COMPRA ? p.SUGESTAO_COMPRA : 0,
   totalSales: p.VENDAS_TOTAL ? Number(p.VENDAS_TOTAL) : 0, // Total sales sum // p.VENDAS_TOTAL ? p.VENDAS_TOTAL : 0,
   /*Formatar para milhar*/
   average6Months: p.MEDIA_6M ? p.MEDIA_6M.toLocaleString("pt-BR") : "0", // Average sales over last 6 months
